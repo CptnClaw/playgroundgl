@@ -1,2 +1,5 @@
 .vscode/
 playgroundgl
+include/glad/
+include/KHR/
+src/glad/
