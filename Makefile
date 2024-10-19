@@ -1,7 +1,7 @@
 CC=clang++
 CSTD=-std=c++17
 WARN=-Wall -Wextra -Wpedantic -Werror
-SOURCE=src/*.cpp 
+SOURCE=src/*.cpp src/*/*.cpp
 INCLUDE=-Iinclude
 LINKGL=-lglfw -lGL -lX11 -lpthread -lXrandr -lXi -ldl
 OUTPUT=playgroundgl
