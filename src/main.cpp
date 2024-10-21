@@ -1,5 +1,4 @@
 #include <iostream>
-#include <math.h>
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 
@@ -10,13 +9,8 @@
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
 
-void send_modulation(int shader_prog)
-{
-    double time = glfwGetTime();
-    double modulation = (sin(time) + 1) / 2.0;
-    int unif_loc = glGetUniformLocation(shader_prog, "modulation");
-    glUniform1f(unif_loc, modulation);
-}
+extern uint shader_program[2];
+extern float move_x, move_y, zoom;
 
 uint load_texture(std::string texture_path, GLenum format)
 {
@@ -27,7 +21,7 @@ uint load_texture(std::string texture_path, GLenum format)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     // Read image file
     int texwidth, texheight, texchannels;
@@ -87,7 +81,6 @@ int main()
     glfwSetFramebufferSizeCallback(window, fb_sz_callback);
 
     // Compile shaders
-    uint shader_program[2];
     shader_program[0] = build_program("src/vertex.glsl", "src/fragment.glsl");
     if (0 == shader_program[0])
     {
@@ -188,6 +181,7 @@ int main()
         {
             glUseProgram(shader_program[i]);
             send_modulation(shader_program[i]);
+            send_movement(shader_program[i], move_x, move_y, zoom);
             glBindVertexArray(array_objs[i]);
             glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
         }

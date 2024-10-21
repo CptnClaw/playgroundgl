@@ -1,7 +1,26 @@
 #include <iostream>
+#include <math.h>
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 #include "shaders.h"
+
+uint shader_program[2];
+
+void send_movement(int shader_prog, float x, float y, float zoom)
+{
+    int unif_loc = glGetUniformLocation(shader_prog, "movement");
+    glUniform2f(unif_loc, x, y);
+    unif_loc = glGetUniformLocation(shader_prog, "zoom");
+    glUniform1f(unif_loc, zoom);
+}
+
+void send_modulation(int shader_prog)
+{
+    double time = glfwGetTime();
+    double modulation = (sin(time) + 1) / 2.0;
+    int unif_loc = glGetUniformLocation(shader_prog, "modulation");
+    glUniform1f(unif_loc, modulation);
+}
 
 uint compile_shader(std::string shader_path, GLenum shader_type)
 {

@@ -1,5 +1,8 @@
 #include <iostream>
 #include "callbacks.h"
+#include "shaders.h"
+
+extern uint shader_program[2];
 
 void error_callback(int err, const char *msg)
 {
@@ -7,10 +10,12 @@ void error_callback(int err, const char *msg)
 }
 
 bool is_wireframe = false;
+float move_x = 0.f, move_y = 0.f, zoom = 1.f;
+float delta = .01f;
 
 void key_callback(GLFWwindow *window, int key, [[maybe_unused]] int scancode, [[maybe_unused]] int action, [[maybe_unused]] int mods)
 {
-    if (GLFW_PRESS == action)
+    if (GLFW_PRESS == action || GLFW_REPEAT == action)
     {
         switch (key)
         {
@@ -23,6 +28,24 @@ void key_callback(GLFWwindow *window, int key, [[maybe_unused]] int scancode, [[
             if (is_wireframe)   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             else                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);               
             is_wireframe = !is_wireframe;
+            break;
+        case GLFW_KEY_W:
+            move_y -= delta;
+            break;
+        case GLFW_KEY_A:
+            move_x += delta;
+            break;
+        case GLFW_KEY_S:
+            move_y += delta;
+            break;
+        case GLFW_KEY_D:
+            move_x -= delta;
+            break;
+        case GLFW_KEY_EQUAL:
+            zoom -= delta;
+            break;
+        case GLFW_KEY_MINUS:
+            zoom += delta;
             break;
         default:
             break;
