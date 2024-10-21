@@ -16,6 +16,7 @@ void key_callback(GLFWwindow *window, int key, [[maybe_unused]] int scancode, [[
         {
         case GLFW_KEY_Q:
         case GLFW_KEY_ESCAPE:
+        case GLFW_KEY_CAPS_LOCK:
             glfwSetWindowShouldClose(window, GLFW_TRUE);
             break;
         case GLFW_KEY_SPACE:

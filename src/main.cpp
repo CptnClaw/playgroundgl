@@ -3,6 +3,7 @@
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 
+#include "stb_image.h"
 #include "callbacks.h"
 #include "shaders.h"
 
@@ -15,6 +16,36 @@ void send_modulation(int shader_prog)
     double modulation = (sin(time) + 1) / 2.0;
     int unif_loc = glGetUniformLocation(shader_prog, "modulation");
     glUniform1f(unif_loc, modulation);
+}
+
+uint load_texture(std::string texture_path, GLenum format)
+{
+    // Prepare OpenGL texture
+    uint texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // Read image file
+    int texwidth, texheight, texchannels;
+    unsigned char *texdata = stbi_load(texture_path.c_str(), &texwidth, &texheight, &texchannels, 0);
+
+    // Copy image into GPU
+    if (texdata)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texwidth, texheight, 0, format, GL_UNSIGNED_BYTE, texdata);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    
+    stbi_image_free(texdata);
+    return texture;
 }
 
 
@@ -72,11 +103,11 @@ int main()
 
     // Define triangles
     float vertices[] = {
-        // 2D position      // Color
-        -0.7f,  -0.5f,       1.f, 0.f, 0.f,  
-         0.3f,  -0.5f,       0.f, 1.f, 0.f,  
-         -0.2f,  0.5f,       0.f, 0.f, 1.f,  
-         0.8f,   0.5f,       0.f, 0.f, 1.f,  
+        // 2D position      // Color            // texture coords
+        -0.7f,  -0.5f,       1.f, 0.f, 0.f,     0.f, 0.f,
+         0.3f,  -0.5f,       0.f, 1.f, 0.f,     1.f, 0.f,
+         -0.2f,  0.5f,       0.f, 0.f, 1.f,     .5f, 1.f,
+         0.8f,   0.5f,       0.f, 0.f, 1.f,     0.f, 0.f
     };
     uint indices1[] = {
         0, 1, 2
@@ -98,20 +129,53 @@ int main()
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibuf[0]);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices1), indices1, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    size_t stride = 7 * sizeof(float);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, stride, (void*)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (void*)(2 * sizeof(float)));
     glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride, (void*)(5 * sizeof(float)));
+    glEnableVertexAttribArray(2);
 
     glBindVertexArray(array_objs[1]);
     glBindBuffer(GL_ARRAY_BUFFER, vbuf);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibuf[1]);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices2), indices2, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, stride, (void*)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (void*)(2 * sizeof(float)));
     glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride, (void*)(5 * sizeof(float)));
+    glEnableVertexAttribArray(2);
     
+    // Load texture
+    uint textures[] = {
+        load_texture("resources/texture.jpg", GL_RGB),
+        load_texture("resources/texture2.png", GL_RGBA)
+    };
+    
+    // Activate texture units 
+    for (int i=0; i<2; i++)
+    {
+        
+        glActiveTexture(GL_TEXTURE0 + i);
+        glBindTexture(GL_TEXTURE_2D, textures[i]);
+    }
+    
+    // Connect texture units with samplers in fragment shaders
+    for (int i=0; i<2; i++)
+    {
+        glUseProgram(shader_program[i]);
+        int samplers[] = {
+            glGetUniformLocation(shader_program[i], "texture_img1"),
+            glGetUniformLocation(shader_program[i], "texture_img2")
+        };
+        for (int j=0; j<2; j++)
+        {
+            glUniform1i(samplers[j], j);
+        }
+    }
+
     // Loop until the user closes the window
     while (!glfwWindowShouldClose(window))
     {
