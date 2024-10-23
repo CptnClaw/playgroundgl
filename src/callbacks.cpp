@@ -2,15 +2,13 @@
 #include "callbacks.h"
 #include "shaders.h"
 
-extern uint shader_program[2];
-
 void error_callback(int err, const char *msg)
 {
     std::cout << "Error " << err << ": " << msg << std::endl;
 }
 
 bool is_wireframe = false;
-float move_x = 0.f, move_y = 0.f, rot_speed = 1.f;
+float move_x = 0.f, move_y = 0.f, rot_speed = .1f;
 float delta = .05f;
 
 void key_callback(GLFWwindow *window, int key, [[maybe_unused]] int scancode, [[maybe_unused]] int action, [[maybe_unused]] int mods)

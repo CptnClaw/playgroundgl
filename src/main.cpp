@@ -12,49 +12,38 @@
 #define WINDOW_HEIGHT 600
 #define PI 3.14159f
 
-extern uint shader_program[2];
+extern uint shader_program;
 extern float move_x, move_y, rot_speed;
 
 
-glm::mat4 create_model()
+glm::mat4 create_model(glm::vec3 pos, float rot)
 {
     glm::mat4 matrix(1.f); // Unit matrix
-    matrix = glm::translate(matrix, glm::vec3(move_x, move_y, 0.f)); 
-    return glm::rotate(matrix,  -PI / 3, glm::vec3(1.f, 0.f, 0.f));
+    matrix = glm::translate(matrix, pos); 
+    return glm::rotate(matrix,  rot * -PI / 3, glm::vec3(1.f, 2.f, 0.f));
 }
 
 glm::mat4 create_view()
 {
     glm::mat4 matrix(1.f); // Unit matrix
-    return glm::translate(matrix, glm::vec3(0.f, 0.f, -3.f));
+    return glm::translate(matrix, glm::vec3(0.f+move_x, 0.f, -3.f+move_y));
 }
 
 glm::mat4 create_projection()
 {
     // return glm::ortho(-1.f, 1.f, -1.f, 1.f, -1.f, 20.f);
-    return glm::perspective(rot_speed * PI / 4, (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, .1f, 20.f);
+    return glm::perspective(PI / 4, (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, .1f, 20.f);
 }
 
-void update(uint *programs, int num_programs)
+void update(uint program, glm::vec3 pos, float rot)
 {
-    glm::mat4 model = create_model();
+    glm::mat4 model = create_model(pos, rot);
     glm::mat4 view = create_view();
     glm::mat4 projection = create_projection();
     glm::mat4 mv = view * model;
     glm::mat4 mvp = projection * mv;
-    for (int i=0; i<num_programs; i++)
-    {
-        send_matrix(programs[i], "mv", mv);
-        send_matrix(programs[i], "mvp", mvp);
-    }
-}
-
-glm::mat4 create_transform(float x, float y, float rotation)
-{
-    glm::mat4 transform(1.f); // Unit matrix
-    transform = glm::translate(transform, glm::vec3(x, y, 0.f)); // End with translation
-    transform = glm::rotate(transform, rotation, glm::vec3(0.f, 0.f, 1.f)); // Start with rotation
-    return transform;
+    send_matrix(program, "mv", mv);
+    send_matrix(program, "mvp", mvp);
 }
 
 uint load_texture(std::string texture_path, GLenum format)
@@ -63,8 +52,8 @@ uint load_texture(std::string texture_path, GLenum format)
     uint texture;
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
@@ -120,20 +109,15 @@ int main()
     }
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     glfwSwapInterval(1);
+    glEnable(GL_DEPTH_TEST);
     
     // Set callbacks
     glfwSetKeyCallback(window, key_callback);
     glfwSetFramebufferSizeCallback(window, fb_sz_callback);
 
     // Compile shaders
-    shader_program[0] = build_program("src/vertex.glsl", "src/fragment.glsl");
-    if (0 == shader_program[0])
-    {
-        glfwTerminate();
-        return -1;
-    }
-    shader_program[1] = build_program("src/vertex.glsl", "src/fragment2.glsl");
-    if (0 == shader_program[1])
+    shader_program = build_program("src/vertex.glsl", "src/fragment.glsl");
+    if (0 == shader_program)
     {
         glfwTerminate();
         return -1;
@@ -141,52 +125,82 @@ int main()
 
     // Define triangles
     float vertices[] = {
-        // 2D position    // Color         // texture coords
-        -.5f, -.5f,       1.f, 0.f, 0.f,     0.f, 0.f,          // bottom left
-         .5f, -.5f,       0.f, 1.f, 0.f,     1.f, 0.f,          // bottom right
-        -.5f,  .5f,       0.f, 0.f, 1.f,     .5f, 1.f,          // top left
-         .5f,  .5f,       0.f, 0.f, 1.f,     0.f, 0.f           // top right
+        // 2D position    // texture coords
+        -.5f, -.5f, -.5f,      0.f, 0.f,      // bottom left
+         .5f, -.5f, -.5f,      1.f, 0.f,      // bottom right
+        -.5f,  .5f, -.5f,      0.f, 1.f,      // top left
+         .5f,  .5f, -.5f,      1.f, 1.f,      // top right
+                                              //
+        -.5f, -.5f, .5f,       0.f, 0.f,      // 
+         .5f, -.5f, .5f,       1.f, 0.f,      // 
+        -.5f,  .5f, .5f,       0.f, 1.f,      // 
+         .5f,  .5f, .5f,       1.f, 1.f,      // 
+                                              // 
+        -.5f,  .5f, .5f,       0.f, 0.f,      // 
+         .5f,  .5f, .5f,       1.f, 0.f,      // 
+        -.5f,  .5f, -.5f,      0.f, 1.f,      // 
+         .5f,  .5f, -.5f,      1.f, 1.f,      // 
+                                              //
+        -.5f, -.5f, .5f,       0.f, 0.f,      // 
+         .5f, -.5f, .5f,       1.f, 0.f,      // 
+        -.5f, -.5f, -.5f,      0.f, 1.f,      // 
+         .5f, -.5f, -.5f,      1.f, 1.f,      // 
+                                              //
+         .5f,  .5f,  .5f,      0.f, 0.f,      // 
+         .5f, -.5f,  .5f,      1.f, 0.f,      // 
+         .5f,  .5f, -.5f,      0.f, 1.f,      // 
+         .5f, -.5f, -.5f,      1.f, 1.f,      // 
+                                              //
+         -.5f,  .5f, .5f,      0.f, 0.f,      // 
+         -.5f, -.5f, .5f,      1.f, 0.f,      // 
+         -.5f,  .5f,-.5f,      0.f, 1.f,      // 
+         -.5f, -.5f,-.5f,      1.f, 1.f       // 
+                                               
     };
-    uint indices1[] = {
-        0, 1, 2
+    uint indices[] = {
+        0, 1, 2, 1, 2, 3, // back
+        4, 5, 6, 5, 6, 7, // front
+        8, 9,10, 9,10,11, // top
+        12,13,14,13,14,15,// bottom
+        16,17,18,17,18,19,// right
+        20,21,22,21,22,23 // left
     };
-    uint indices2[] = {
-        1, 2, 3
+    int num_vertices = sizeof(indices) / sizeof(uint);
+
+    glm::vec3 boxes[] = {
+        glm::vec3(0.0f, 0.0f, 0.0f),
+        glm::vec3(2.0f, 5.0f, -15.0f),
+        glm::vec3(-1.5f, -2.2f, -2.5f),
+        glm::vec3(-3.8f, -2.0f, -12.3f),
+        glm::vec3(2.4f, -0.4f, -3.5f),
+        glm::vec3(-1.7f, 3.0f, -7.5f),
+        glm::vec3(1.3f, -2.0f, -2.5f),
+        glm::vec3(1.5f, 2.0f, -2.5f),
+        glm::vec3(1.5f, 0.2f, -1.5f),
+        glm::vec3(-1.3f, 1.0f, -1.5f)
     };
+    int num_boxes = sizeof(boxes) / sizeof(glm::vec3);
 
     // Send vertices to GPU
     uint vbuf;
-    uint ibuf[2];
-    uint array_objs[2];
+    uint ibuf;
+    uint array_obj;
     glGenBuffers(1, &vbuf);
-    glGenBuffers(2, ibuf);
-    glGenVertexArrays(2, array_objs);
+    glGenBuffers(1, &ibuf);
+    glGenVertexArrays(1, &array_obj);
 
-    glBindVertexArray(array_objs[0]);
+    glBindVertexArray(array_obj);
     glBindBuffer(GL_ARRAY_BUFFER, vbuf);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibuf[0]);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices1), indices1, GL_STATIC_DRAW);
-    size_t stride = 7 * sizeof(float);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, stride, (void*)0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibuf);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    size_t stride = 5 * sizeof(float);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (void*)(2 * sizeof(float)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride, (void*)(5 * sizeof(float)));
-    glEnableVertexAttribArray(2);
 
-    glBindVertexArray(array_objs[1]);
-    glBindBuffer(GL_ARRAY_BUFFER, vbuf);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibuf[1]);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices2), indices2, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, stride, (void*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (void*)(2 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride, (void*)(5 * sizeof(float)));
-    glEnableVertexAttribArray(2);
-    
-    // Load texture
+    // Load textures
     uint textures[] = {
         load_texture("resources/texture.jpg", GL_RGB),
         load_texture("resources/texture2.png", GL_RGBA)
@@ -200,19 +214,15 @@ int main()
     }
     
     // Connect texture units with samplers in fragment shaders
-    for (int i=0; i<2; i++)
+    glUseProgram(shader_program);
+    int samplers[] = {
+        glGetUniformLocation(shader_program, "texture_img1"),
+        glGetUniformLocation(shader_program, "texture_img2")};
+    for (int j = 0; j < 2; j++)
     {
-        glUseProgram(shader_program[i]);
-        int samplers[] = {
-            glGetUniformLocation(shader_program[i], "texture_img1"),
-            glGetUniformLocation(shader_program[i], "texture_img2")
-        };
-        for (int j=0; j<2; j++)
-        {
-            glUniform1i(samplers[j], j);
-        }
+        glUniform1i(samplers[j], j);
     }
-    
+
     // Loop until the user closes the window
     double time_before = glfwGetTime();
     float rotation = 0;
@@ -220,21 +230,19 @@ int main()
     {
         // Clear screen
         glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Run programs
+        // Run program
         double time_now = glfwGetTime();
         rotation += (time_now - time_before) * rot_speed;
         time_before = time_now;
-        for (int i = 0; i < 2; i++)
+        glUseProgram(shader_program);
+        glBindVertexArray(array_obj);
+        send_modulation(shader_program);
+        for (int i=0; i<num_boxes; i++)
         {
-            glUseProgram(shader_program[i]);
-            update(shader_program, 2); // Update model, view, projection matrices
-            glm::mat4 transform = create_transform(move_x, move_y, rotation);
-            send_matrix(shader_program[i], "transform", transform);
-            send_modulation(shader_program[i]);
-            glBindVertexArray(array_objs[i]);
-            glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
+            update(shader_program, boxes[i], i + rotation); // Update model, view, projection matrices
+            glDrawElements(GL_TRIANGLES, num_vertices, GL_UNSIGNED_INT, 0);
         }
 
         // Swap front and back buffers 
@@ -245,11 +253,10 @@ int main()
     }
 
     // Free resources
-    glDeleteVertexArrays(2, array_objs);
+    glDeleteVertexArrays(1, &array_obj);
     glDeleteBuffers(1, &vbuf);
-    glDeleteBuffers(2, ibuf);
-    glDeleteProgram(shader_program[0]);
-    glDeleteProgram(shader_program[1]);
+    glDeleteBuffers(1, &ibuf);
+    glDeleteProgram(shader_program);
     glfwDestroyWindow(window);
     glfwTerminate();
     return 0;
