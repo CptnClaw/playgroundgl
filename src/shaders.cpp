@@ -2,16 +2,15 @@
 #include <math.h>
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
+#include <glm/gtc/type_ptr.hpp>
 #include "shaders.h"
 
 uint shader_program[2];
 
-void send_movement(int shader_prog, float x, float y, float zoom)
+void send_matrix(int shader_prog, std::string uniform_name, glm::mat4 matrix)
 {
-    int unif_loc = glGetUniformLocation(shader_prog, "movement");
-    glUniform2f(unif_loc, x, y);
-    unif_loc = glGetUniformLocation(shader_prog, "zoom");
-    glUniform1f(unif_loc, zoom);
+    int unif_loc = glGetUniformLocation(shader_prog, uniform_name.c_str());
+    glUniformMatrix4fv(unif_loc, 1, GL_FALSE, glm::value_ptr(matrix));
 }
 
 void send_modulation(int shader_prog)

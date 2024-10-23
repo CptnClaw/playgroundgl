@@ -1,6 +1,8 @@
 #include <iostream>
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "stb_image.h"
 #include "callbacks.h"
@@ -8,9 +10,52 @@
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
+#define PI 3.14159f
 
 extern uint shader_program[2];
-extern float move_x, move_y, zoom;
+extern float move_x, move_y, rot_speed;
+
+
+glm::mat4 create_model()
+{
+    glm::mat4 matrix(1.f); // Unit matrix
+    matrix = glm::translate(matrix, glm::vec3(move_x, move_y, 0.f)); 
+    return glm::rotate(matrix,  -PI / 3, glm::vec3(1.f, 0.f, 0.f));
+}
+
+glm::mat4 create_view()
+{
+    glm::mat4 matrix(1.f); // Unit matrix
+    return glm::translate(matrix, glm::vec3(0.f, 0.f, -3.f));
+}
+
+glm::mat4 create_projection()
+{
+    // return glm::ortho(-1.f, 1.f, -1.f, 1.f, -1.f, 20.f);
+    return glm::perspective(rot_speed * PI / 4, (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, .1f, 20.f);
+}
+
+void update(uint *programs, int num_programs)
+{
+    glm::mat4 model = create_model();
+    glm::mat4 view = create_view();
+    glm::mat4 projection = create_projection();
+    glm::mat4 mv = view * model;
+    glm::mat4 mvp = projection * mv;
+    for (int i=0; i<num_programs; i++)
+    {
+        send_matrix(programs[i], "mv", mv);
+        send_matrix(programs[i], "mvp", mvp);
+    }
+}
+
+glm::mat4 create_transform(float x, float y, float rotation)
+{
+    glm::mat4 transform(1.f); // Unit matrix
+    transform = glm::translate(transform, glm::vec3(x, y, 0.f)); // End with translation
+    transform = glm::rotate(transform, rotation, glm::vec3(0.f, 0.f, 1.f)); // Start with rotation
+    return transform;
+}
 
 uint load_texture(std::string texture_path, GLenum format)
 {
@@ -96,11 +141,11 @@ int main()
 
     // Define triangles
     float vertices[] = {
-        // 2D position      // Color            // texture coords
-        -0.7f,  -0.5f,       1.f, 0.f, 0.f,     0.f, 0.f,
-         0.3f,  -0.5f,       0.f, 1.f, 0.f,     1.f, 0.f,
-         -0.2f,  0.5f,       0.f, 0.f, 1.f,     .5f, 1.f,
-         0.8f,   0.5f,       0.f, 0.f, 1.f,     0.f, 0.f
+        // 2D position    // Color         // texture coords
+        -.5f, -.5f,       1.f, 0.f, 0.f,     0.f, 0.f,          // bottom left
+         .5f, -.5f,       0.f, 1.f, 0.f,     1.f, 0.f,          // bottom right
+        -.5f,  .5f,       0.f, 0.f, 1.f,     .5f, 1.f,          // top left
+         .5f,  .5f,       0.f, 0.f, 1.f,     0.f, 0.f           // top right
     };
     uint indices1[] = {
         0, 1, 2
@@ -150,7 +195,6 @@ int main()
     // Activate texture units 
     for (int i=0; i<2; i++)
     {
-        
         glActiveTexture(GL_TEXTURE0 + i);
         glBindTexture(GL_TEXTURE_2D, textures[i]);
     }
@@ -168,8 +212,10 @@ int main()
             glUniform1i(samplers[j], j);
         }
     }
-
+    
     // Loop until the user closes the window
+    double time_before = glfwGetTime();
+    float rotation = 0;
     while (!glfwWindowShouldClose(window))
     {
         // Clear screen
@@ -177,11 +223,16 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
 
         // Run programs
+        double time_now = glfwGetTime();
+        rotation += (time_now - time_before) * rot_speed;
+        time_before = time_now;
         for (int i = 0; i < 2; i++)
         {
             glUseProgram(shader_program[i]);
+            update(shader_program, 2); // Update model, view, projection matrices
+            glm::mat4 transform = create_transform(move_x, move_y, rotation);
+            send_matrix(shader_program[i], "transform", transform);
             send_modulation(shader_program[i]);
-            send_movement(shader_program[i], move_x, move_y, zoom);
             glBindVertexArray(array_objs[i]);
             glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
         }

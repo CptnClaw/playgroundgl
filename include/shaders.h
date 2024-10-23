@@ -2,8 +2,9 @@
 #define SHADERS_H_
 
 #include <string>
+#include <glm/glm.hpp>
 
-void send_movement(int shader_prog, float x, float y, float zoom);
+void send_matrix(int shader_prog, std::string uniform_name, glm::mat4 matrix);
 void send_modulation(int shader_prog);
 uint build_program(std::string vertex_shader_path, std::string fragment_shader_path);
 

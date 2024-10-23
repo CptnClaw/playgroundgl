@@ -10,8 +10,8 @@ void error_callback(int err, const char *msg)
 }
 
 bool is_wireframe = false;
-float move_x = 0.f, move_y = 0.f, zoom = 1.f;
-float delta = .01f;
+float move_x = 0.f, move_y = 0.f, rot_speed = 1.f;
+float delta = .05f;
 
 void key_callback(GLFWwindow *window, int key, [[maybe_unused]] int scancode, [[maybe_unused]] int action, [[maybe_unused]] int mods)
 {
@@ -30,22 +30,24 @@ void key_callback(GLFWwindow *window, int key, [[maybe_unused]] int scancode, [[
             is_wireframe = !is_wireframe;
             break;
         case GLFW_KEY_W:
-            move_y -= delta;
-            break;
-        case GLFW_KEY_A:
-            move_x += delta;
-            break;
-        case GLFW_KEY_S:
             move_y += delta;
             break;
-        case GLFW_KEY_D:
+        case GLFW_KEY_A:
             move_x -= delta;
             break;
+        case GLFW_KEY_S:
+            move_y -= delta;
+            break;
+        case GLFW_KEY_D:
+            move_x += delta;
+            break;
         case GLFW_KEY_EQUAL:
-            zoom -= delta;
+            rot_speed += delta;
+            std::cout << rot_speed << std::endl;
             break;
         case GLFW_KEY_MINUS:
-            zoom += delta;
+            rot_speed -= delta;
+            std::cout << rot_speed << std::endl;
             break;
         default:
             break;
