@@ -41,11 +41,9 @@ void key_callback(GLFWwindow *window, int key, [[maybe_unused]] int scancode, [[
             break;
         case GLFW_KEY_EQUAL:
             rot_speed += delta;
-            std::cout << rot_speed << std::endl;
             break;
         case GLFW_KEY_MINUS:
             rot_speed -= delta;
-            std::cout << rot_speed << std::endl;
             break;
         default:
             break;

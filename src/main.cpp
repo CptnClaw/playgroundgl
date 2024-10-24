@@ -11,10 +11,14 @@
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
 #define PI 3.14159f
+#define MOVE_SPEED 2.f
 
 extern uint shader_program;
 extern float move_x, move_y, rot_speed;
 
+glm::vec3 camera_position(0.f, 0.f, -3.f);
+glm::vec3 camera_direction(0.f, 0.f, 1.f);
+glm::vec3 world_up(0.f, 1.f, 0.f);
 
 glm::mat4 create_model(glm::vec3 pos, float rot)
 {
@@ -25,14 +29,19 @@ glm::mat4 create_model(glm::vec3 pos, float rot)
 
 glm::mat4 create_view()
 {
-    glm::mat4 matrix(1.f); // Unit matrix
-    return glm::translate(matrix, glm::vec3(0.f+move_x, 0.f, -3.f+move_y));
+    // glm::mat4 matrix(1.f); // Unit matrix
+    // return glm::translate(matrix, glm::vec3(0.f+move_x, 0.f, -3.f+move_y));
+    glm::vec3 camera_right = glm::normalize(glm::cross(camera_direction, world_up));
+    glm::vec3 moved_position = camera_position + 
+                                move_y * camera_direction * MOVE_SPEED + 
+                                move_x * camera_right * MOVE_SPEED;
+    return glm::lookAt(moved_position, moved_position + camera_direction, world_up);
 }
 
 glm::mat4 create_projection()
 {
     // return glm::ortho(-1.f, 1.f, -1.f, 1.f, -1.f, 20.f);
-    return glm::perspective(PI / 4, (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, .1f, 20.f);
+    return glm::perspective(PI / 4, (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, .1f, 100.f);
 }
 
 void update(uint program, glm::vec3 pos, float rot)
