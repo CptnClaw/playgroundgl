@@ -14,8 +14,10 @@
 #define MOVE_SPEED 2.f
 
 extern uint shader_program;
-extern float move_x, move_y, rot_speed;
+extern int move_x, move_y;
+extern float rot_speed;
 
+float boxes_rotation = 0;
 glm::vec3 camera_position(0.f, 0.f, -3.f);
 glm::vec3 camera_direction(0.f, 0.f, 1.f);
 glm::vec3 world_up(0.f, 1.f, 0.f);
@@ -27,15 +29,15 @@ glm::mat4 create_model(glm::vec3 pos, float rot)
     return glm::rotate(matrix,  rot * -PI / 3, glm::vec3(1.f, 2.f, 0.f));
 }
 
-glm::mat4 create_view()
+glm::mat4 create_view(float delta_time)
 {
     // glm::mat4 matrix(1.f); // Unit matrix
     // return glm::translate(matrix, glm::vec3(0.f+move_x, 0.f, -3.f+move_y));
     glm::vec3 camera_right = glm::normalize(glm::cross(camera_direction, world_up));
-    glm::vec3 moved_position = camera_position + 
-                                move_y * camera_direction * MOVE_SPEED + 
-                                move_x * camera_right * MOVE_SPEED;
-    return glm::lookAt(moved_position, moved_position + camera_direction, world_up);
+    camera_position = camera_position + 
+                    camera_direction * (MOVE_SPEED * delta_time * move_y) + 
+                    camera_right * (MOVE_SPEED * delta_time * move_x);
+    return glm::lookAt(camera_position, camera_position + camera_direction, world_up);
 }
 
 glm::mat4 create_projection()
@@ -44,10 +46,11 @@ glm::mat4 create_projection()
     return glm::perspective(PI / 4, (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, .1f, 100.f);
 }
 
-void update(uint program, glm::vec3 pos, float rot)
+void update(uint program, glm::vec3 pos, int box_id, double delta_time)
 {
-    glm::mat4 model = create_model(pos, rot);
-    glm::mat4 view = create_view();
+    boxes_rotation += delta_time * rot_speed;
+    glm::mat4 model = create_model(pos, box_id + boxes_rotation);
+    glm::mat4 view = create_view(delta_time);
     glm::mat4 projection = create_projection();
     glm::mat4 mv = view * model;
     glm::mat4 mvp = projection * mv;
@@ -234,7 +237,6 @@ int main()
 
     // Loop until the user closes the window
     double time_before = glfwGetTime();
-    float rotation = 0;
     while (!glfwWindowShouldClose(window))
     {
         // Clear screen
@@ -243,14 +245,14 @@ int main()
 
         // Run program
         double time_now = glfwGetTime();
-        rotation += (time_now - time_before) * rot_speed;
+        double delta_time = time_now - time_before;
         time_before = time_now;
         glUseProgram(shader_program);
         glBindVertexArray(array_obj);
         send_modulation(shader_program);
         for (int i=0; i<num_boxes; i++)
         {
-            update(shader_program, boxes[i], i + rotation); // Update model, view, projection matrices
+            update(shader_program, boxes[i], i, delta_time); // Update model, view, projection matrices
             glDrawElements(GL_TRIANGLES, num_vertices, GL_UNSIGNED_INT, 0);
         }
 

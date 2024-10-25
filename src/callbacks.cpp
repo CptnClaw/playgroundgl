@@ -7,47 +7,55 @@ void error_callback(int err, const char *msg)
     std::cout << "Error " << err << ": " << msg << std::endl;
 }
 
+void modify_by_action(int action, int value, int &to_modify)
+{
+    if (action == GLFW_PRESS)   to_modify = value;
+    if (action == GLFW_RELEASE) to_modify = 0;
+    // else do nothing
+}
+
 bool is_wireframe = false;
-float move_x = 0.f, move_y = 0.f, rot_speed = .1f;
+int move_x = 0, move_y = 0;
+float rot_speed = .1f;
 float delta = .05f;
 
 void key_callback(GLFWwindow *window, int key, [[maybe_unused]] int scancode, [[maybe_unused]] int action, [[maybe_unused]] int mods)
 {
-    if (GLFW_PRESS == action || GLFW_REPEAT == action)
+    switch (key)
     {
-        switch (key)
+    case GLFW_KEY_Q:
+    case GLFW_KEY_ESCAPE:
+    case GLFW_KEY_CAPS_LOCK:
+        glfwSetWindowShouldClose(window, GLFW_TRUE);
+        break;
+    case GLFW_KEY_SPACE:
+        if (action == GLFW_PRESS)
         {
-        case GLFW_KEY_Q:
-        case GLFW_KEY_ESCAPE:
-        case GLFW_KEY_CAPS_LOCK:
-            glfwSetWindowShouldClose(window, GLFW_TRUE);
-            break;
-        case GLFW_KEY_SPACE:
             if (is_wireframe)   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-            else                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);               
+            else                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             is_wireframe = !is_wireframe;
-            break;
-        case GLFW_KEY_W:
-            move_y += delta;
-            break;
-        case GLFW_KEY_A:
-            move_x -= delta;
-            break;
-        case GLFW_KEY_S:
-            move_y -= delta;
-            break;
-        case GLFW_KEY_D:
-            move_x += delta;
-            break;
-        case GLFW_KEY_EQUAL:
-            rot_speed += delta;
-            break;
-        case GLFW_KEY_MINUS:
-            rot_speed -= delta;
-            break;
-        default:
-            break;
         }
+        break;
+    case GLFW_KEY_W:
+        modify_by_action(action, 1, move_y);
+        break;
+    case GLFW_KEY_A:
+        modify_by_action(action, -1, move_x);
+        break;
+    case GLFW_KEY_S:
+        modify_by_action(action, -1, move_y);
+        break;
+    case GLFW_KEY_D:
+        modify_by_action(action, 1, move_x);
+        break;
+    case GLFW_KEY_EQUAL:
+        rot_speed += delta;
+        break;
+    case GLFW_KEY_MINUS:
+        rot_speed -= delta;
+        break;
+    default:
+        break;
     }
 }
 
