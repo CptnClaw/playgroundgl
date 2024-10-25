@@ -19,6 +19,13 @@ int move_x = 0, move_y = 0;
 float rot_speed = .1f;
 float delta = .05f;
 
+bool mouse_entered = false;
+double last_mouse_x, last_mouse_y;
+float pitch = 0.f, yaw = 0.f;
+float mouse_sensitivity = .01f;
+float zoom = 1;
+float scroll_sensitivity = 0.1f;
+
 void key_callback(GLFWwindow *window, int key, [[maybe_unused]] int scancode, [[maybe_unused]] int action, [[maybe_unused]] int mods)
 {
     switch (key)
@@ -62,4 +69,22 @@ void key_callback(GLFWwindow *window, int key, [[maybe_unused]] int scancode, [[
 void fb_sz_callback([[maybe_unused]] GLFWwindow *window, int width, int height)
 {
     glViewport(0, 0, width, height);
+}
+
+
+void mouse_callback([[maybe_unused]] GLFWwindow *window, double x, double y)
+{
+    if (mouse_entered)
+    {
+        pitch += (float)(last_mouse_y - y) * mouse_sensitivity;
+        yaw += (float)(x - last_mouse_x) * mouse_sensitivity;
+    }
+    mouse_entered = true;
+    last_mouse_x = x;
+    last_mouse_y = y;
+}
+
+void scroll_callback([[maybe_unused]] GLFWwindow *window, [[maybe_unused]] double xoffset, double yoffset)
+{
+    zoom -= yoffset * scroll_sensitivity;
 }

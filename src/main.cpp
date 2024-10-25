@@ -11,11 +11,15 @@
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
 #define PI 3.14159f
+#define EPSILON .001f
+#define ALMOST_PI (PI-EPSILON)
 #define MOVE_SPEED 2.f
 
 extern uint shader_program;
 extern int move_x, move_y;
 extern float rot_speed;
+extern float pitch, yaw;
+extern float zoom;
 
 float boxes_rotation = 0;
 glm::vec3 camera_position(0.f, 0.f, -3.f);
@@ -31,8 +35,12 @@ glm::mat4 create_model(glm::vec3 pos, float rot)
 
 glm::mat4 create_view(float delta_time)
 {
-    // glm::mat4 matrix(1.f); // Unit matrix
-    // return glm::translate(matrix, glm::vec3(0.f+move_x, 0.f, -3.f+move_y));
+    if (pitch > ALMOST_PI / 2) pitch = ALMOST_PI / 2;
+    else if (pitch < -(ALMOST_PI) / 2) pitch = -(ALMOST_PI) / 2;
+    camera_direction.x = cos(yaw) * cos(pitch);
+    camera_direction.y = sin(pitch);
+    camera_direction.z = sin(yaw) * cos(pitch);
+    camera_direction = glm::normalize(camera_direction);
     glm::vec3 camera_right = glm::normalize(glm::cross(camera_direction, world_up));
     camera_position = camera_position + 
                     camera_direction * (MOVE_SPEED * delta_time * move_y) + 
@@ -43,7 +51,10 @@ glm::mat4 create_view(float delta_time)
 glm::mat4 create_projection()
 {
     // return glm::ortho(-1.f, 1.f, -1.f, 1.f, -1.f, 20.f);
-    return glm::perspective(PI / 4, (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, .1f, 100.f);
+    if (zoom > 1.f) zoom = 1.f;
+    if (zoom < .2f) zoom = .2f;
+    float fov = zoom * (PI / 4);
+    return glm::perspective(fov, (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, .1f, 100.f);
 }
 
 void update(uint program, glm::vec3 pos, int box_id, double delta_time)
@@ -122,10 +133,13 @@ int main()
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     glfwSwapInterval(1);
     glEnable(GL_DEPTH_TEST);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     
     // Set callbacks
     glfwSetKeyCallback(window, key_callback);
     glfwSetFramebufferSizeCallback(window, fb_sz_callback);
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetScrollCallback(window, scroll_callback);
 
     // Compile shaders
     shader_program = build_program("src/vertex.glsl", "src/fragment.glsl");
