@@ -1,7 +1,3 @@
-#include <glad/gl.h>
-#include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include "shaders.h"
 #include "texture.h"
 #include "box.h"
@@ -69,11 +65,11 @@ int main()
         float delta_time = clock.tick();
         program.use();
         program.uniform_modulation("modulation");
+        glm::mat4 view = camera.create_view(delta_time);
+        glm::mat4 projection = camera.create_projection(aspect_ratio);
         for (int i = 0; i < num_boxes; i++)
         {
             glm::mat4 model = boxes[i].update(delta_time);
-            glm::mat4 view = camera.create_view(delta_time);
-            glm::mat4 projection = camera.create_projection(aspect_ratio);
             glm::mat4 mv = view * model;
             glm::mat4 mvp = projection * view * model;
             program.uniform_mat4("mv", mv);

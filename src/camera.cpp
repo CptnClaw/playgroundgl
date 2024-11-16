@@ -5,7 +5,7 @@
 #define PI 3.14159f
 #define EPSILON .001f
 #define ALMOST_PI (PI-EPSILON)
-#define MOVE_SPEED 1.f
+#define MOVE_SPEED 2.f
 
 extern int move_x, move_y;
 extern float pitch, yaw;
