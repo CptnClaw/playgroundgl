@@ -1,12 +1,12 @@
 #version 330 core
 
-in vec4 vertex_color;
 in vec2 vertex_texture;
 
-out vec4 fragColor;
 uniform sampler2D texture_img1;
 uniform sampler2D texture_img2;
 uniform float modulation;
+
+out vec4 fragColor;
 
 void main()
 {

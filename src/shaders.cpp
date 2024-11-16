@@ -5,20 +5,46 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "shaders.h"
 
-uint shader_program[2];
-
-void send_matrix(int shader_prog, std::string uniform_name, glm::mat4 matrix)
+void Shaders::uniform_mat4(const std::string &uniform_name, glm::mat4 matrix) const
 {
-    int unif_loc = glGetUniformLocation(shader_prog, uniform_name.c_str());
+    int unif_loc = glGetUniformLocation(id, uniform_name.c_str());
     glUniformMatrix4fv(unif_loc, 1, GL_FALSE, glm::value_ptr(matrix));
 }
 
-void send_modulation(int shader_prog)
+void Shaders::uniform_float(const std::string &uniform_name, float f) const
+{
+    int unif_loc = glGetUniformLocation(id, uniform_name.c_str());
+    glUniform1f(unif_loc, f);
+}
+
+void Shaders::uniform_modulation(const std::string &uniform_name) const
 {
     double time = glfwGetTime();
     double modulation = (sin(time) + 1) / 2.0;
-    int unif_loc = glGetUniformLocation(shader_prog, "modulation");
-    glUniform1f(unif_loc, modulation);
+    uniform_float(uniform_name, modulation);
+}
+
+void Shaders::uniform_int(const std::string &uniform_name, int i) const
+{
+    int unif_loc = glGetUniformLocation(id, uniform_name.c_str());
+    glUniform1i(unif_loc, i);
+}
+
+void Shaders::uniform_texture(const std::string &uniform_name, const Texture &tex)
+{
+    tex.activate(texture_counter);
+    uniform_int(uniform_name, texture_counter);
+    texture_counter++;
+}
+
+void Shaders::use() const
+{
+    glUseProgram(id);
+}
+
+Shaders::~Shaders()
+{
+    glDeleteProgram(id);
 }
 
 uint compile_shader(std::string shader_path, GLenum shader_type)
@@ -55,38 +81,42 @@ uint compile_shader(std::string shader_path, GLenum shader_type)
     return shader;
 }
 
-uint build_program(std::string vertex_shader_path, std::string fragment_shader_path)
+Shaders::Shaders(const std::string &vertex_shader_path, const std::string &fragment_shader_path, bool &success)
 {
     // Compile vertex shader
     uint vertex_shader = compile_shader(vertex_shader_path, GL_VERTEX_SHADER);
     if (0 == vertex_shader)
     {
-        return 0;
+        success = false;
+        return;
     }
 
     // Compile fragment shader
     uint fragment_shader = compile_shader(fragment_shader_path, GL_FRAGMENT_SHADER);
     if (0 == fragment_shader)
     {
-        return 0;
+        success = false;
+        return;
     }
 
     // Link shader program
-    int success;
+    int linking_success;
     char compilation_errs[512];
-    uint shader_program = glCreateProgram();
-    glAttachShader(shader_program, vertex_shader);
-    glAttachShader(shader_program, fragment_shader);
-    glLinkProgram(shader_program);
-    glGetProgramiv(shader_program, GL_LINK_STATUS, &success);
-    if (!success)
+    id = glCreateProgram();
+    glAttachShader(id, vertex_shader);
+    glAttachShader(id, fragment_shader);
+    glLinkProgram(id);
+    glGetProgramiv(id, GL_LINK_STATUS, &linking_success);
+    if (!linking_success)
     {
-        glGetProgramInfoLog(shader_program, 512, nullptr, compilation_errs);
+        glGetProgramInfoLog(id, 512, nullptr, compilation_errs);
         std::cout << "Error linking shader program: " << std::endl;
         std::cout << compilation_errs << std::endl << std::endl;
-        return 0;
+        success = false;
+        return;
     }
     glDeleteShader(vertex_shader);
     glDeleteShader(fragment_shader);
-    return shader_program;
+    texture_counter = 0;
+    success = true;
 }

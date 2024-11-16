@@ -3,9 +3,31 @@
 
 #include <string>
 #include <glm/glm.hpp>
+#include "texture.h"
 
-void send_matrix(int shader_prog, std::string uniform_name, glm::mat4 matrix);
-void send_modulation(int shader_prog);
-uint build_program(std::string vertex_shader_path, std::string fragment_shader_path);
+class Shaders
+{
+    public:
+        // Reads, compiles and links shader program
+        // Make sure to check last argument for any errors
+        Shaders(const std::string &vertex_shader_path, const std::string &fragment_shader_path, bool &success);
+
+        // Frees resources
+        ~Shaders();
+
+        // Activate program
+        void use() const;
+
+        // Send uniform data to shaders
+        void uniform_mat4(const std::string &uniform_name, glm::mat4 matrix) const;
+        void uniform_float(const std::string &uniform_name, float f) const;
+        void uniform_modulation(const std::string &uniform_name) const;
+        void uniform_int(const std::string &uniform_name, int i) const;
+        void uniform_texture(const std::string &uniform_name, const Texture &tex);
+
+    private:
+        int id; // OpenGL program index
+        int texture_counter; // Internal counter for keeping track of uniform_texture calls
+};
 
 #endif // SHADERS_H_
