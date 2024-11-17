@@ -67,8 +67,8 @@ int main()
     program_light.uniform_vec3("light_color", light_color);
 
     // Load and activate texture units
-    Texture tex1("resources/texture.jpg", false);
-    Texture tex2("resources/texture2.png", true);
+    Texture tex1("resources/crate1.png", true);
+    Texture tex2("resources/crate2.png", true);
     program.use();
     program.uniform_texture("texture_img1", tex1);
     program.uniform_texture("texture_img2", tex2);
