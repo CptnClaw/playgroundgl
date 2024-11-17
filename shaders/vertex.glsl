@@ -10,7 +10,6 @@ out vec2 vertex_texture;
 void main()
 {
     gl_Position = mvp * vec4(position.xyz, 1.0);
-    // gl_Position = vec4(position.xyz, 1.0);
     vertex_texture = texcoord;
 }
 

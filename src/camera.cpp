@@ -1,3 +1,4 @@
+#include <iostream>
 #include <math.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include "camera.h"
@@ -11,13 +12,15 @@ extern int move_x, move_y;
 extern float pitch, yaw;
 extern float zoom;
 
-Camera::Camera(glm::vec3 position, glm::vec3 direction, glm::vec3 world_up) : position(position), direction(direction), world_up(world_up)
+Camera::Camera(glm::vec3 position, glm::vec3 direction, glm::vec3 world_up, float aspect_ratio) : 
+            position(position), direction(direction), world_up(world_up), aspect_ratio(aspect_ratio)
 {
     // Left empty intentionally
 }
 
-glm::mat4 Camera::create_view(float delta_time)
+void Camera::update(float delta_time)
 {
+    // Update view matrix
     if (pitch > ALMOST_PI / 2) pitch = ALMOST_PI / 2;
     else if (pitch < -(ALMOST_PI) / 2) pitch = -(ALMOST_PI) / 2;
     direction.x = cos(yaw) * cos(pitch);
@@ -28,13 +31,22 @@ glm::mat4 Camera::create_view(float delta_time)
     position = position + 
                 direction * (MOVE_SPEED * delta_time * move_y) + 
                 camera_right * (MOVE_SPEED * delta_time * move_x);
-    return glm::lookAt(position, position + direction, world_up);
-}
-
-glm::mat4 Camera::create_projection(float aspect_ratio) const
-{
+    glm::vec3 camera_target = position + direction;
+    view = glm::lookAt(position, camera_target, world_up);
+    
+    // Update projection matrix
     if (zoom > 1.f) zoom = 1.f;
     if (zoom < .2f) zoom = .2f;
     float fov = zoom * (PI / 4);
-    return glm::perspective(fov, aspect_ratio, .1f, 100.f);
+    projection = glm::perspective(fov, aspect_ratio, .1f, 100.f);
+}
+
+glm::mat4 Camera::get_view() const
+{
+    return view;
+}
+
+glm::mat4 Camera::get_projection() const
+{
+    return projection;
 }

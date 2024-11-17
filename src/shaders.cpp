@@ -5,6 +5,12 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "shaders.h"
 
+void Shaders::uniform_vec3(const std::string &uniform_name, glm::vec3 v) const
+{
+    int unif_loc = glGetUniformLocation(id, uniform_name.c_str());
+    glUniformMatrix4fv(unif_loc, 1, GL_FALSE, glm::value_ptr(v));
+}
+
 void Shaders::uniform_mat4(const std::string &uniform_name, glm::mat4 matrix) const
 {
     int unif_loc = glGetUniformLocation(id, uniform_name.c_str());

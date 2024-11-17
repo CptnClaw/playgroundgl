@@ -9,7 +9,8 @@
 
 extern float rot_speed;
 
-Box::Box(glm::vec3 position, float rotation) : position(position), rotation(rotation)
+Box::Box(glm::vec3 position, float rotation, float scale, bool keep_rotating) : 
+        position(position), rotation(rotation), scale(scale), keep_rotating(keep_rotating)
 {
     // Define triangles
     float vertices[] = {
@@ -83,18 +84,25 @@ Box::~Box()
     glDeleteBuffers(1, &vbuf);
 }
 
-glm::mat4 Box::update(float delta_time)
+void Box::update(float delta_time)
 {
-    // Start with a unit matrix
-    glm::mat4 model(1.f); 
+    // Start with the identity matrix
+    model = glm::mat4(1.f); 
     
     // Set position in world space
     model = glm::translate(model, position); 
+    model = glm::scale(model, glm::vec3(scale));
     
     // Set rotation
-    rotation += delta_time * rot_speed;
+    if (keep_rotating)
+    {
+        rotation += delta_time * rot_speed;
+    }
     model = glm::rotate(model,  rotation * -PI / 3, glm::vec3(1.f, 2.f, 0.f));
-    
+}
+
+glm::mat4 Box::get_model() const
+{
     return model;
 }
 

@@ -19,6 +19,7 @@ class Shaders
         void use() const;
 
         // Send uniform data to shaders
+        void uniform_vec3(const std::string &uniform_name, glm::vec3 v) const;
         void uniform_mat4(const std::string &uniform_name, glm::mat4 matrix) const;
         void uniform_float(const std::string &uniform_name, float f) const;
         void uniform_modulation(const std::string &uniform_name) const;

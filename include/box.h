@@ -7,14 +7,16 @@ class Box
 {
 public:
     // Create a box at an initial position
-    Box(glm::vec3 position, float rotation);
+    Box(glm::vec3 position, float rotation, float scale, bool keep_rotating);
 
     // Free resources
     ~Box();
 
-    // Update box state
+    // Update box model matrix
+    void update(float delta_time);
+
     // Returns model matrix (world space)
-    glm::mat4 update(float delta_time);
+    glm::mat4 get_model() const;
 
     // Draw box
     void draw() const;
@@ -22,7 +24,9 @@ public:
 private:
     // World matrix parameter
     glm::vec3 position;
-    float rotation;
+    float rotation, scale;
+    bool keep_rotating;
+    glm::mat4 model;
 
     // OpenGL stuff
     uint vbuf; // Index of vertices buffer on GPU

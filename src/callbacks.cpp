@@ -2,6 +2,8 @@
 #include "callbacks.h"
 #include "shaders.h"
 
+#define PI 3.14159f
+
 void error_callback(int err, const char *msg)
 {
     std::cout << "Error " << err << ": " << msg << std::endl;
@@ -21,7 +23,7 @@ float delta = .05f;
 
 bool mouse_entered = false;
 double last_mouse_x, last_mouse_y;
-float pitch = 0.f, yaw = 0.f;
+float pitch = 0.f, yaw = PI / 2.f;
 float mouse_sensitivity = .005f;
 float zoom = 1;
 float scroll_sensitivity = 0.1f;
