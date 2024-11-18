@@ -9,43 +9,43 @@
 
 extern float rot_speed;
 
-Box::Box(glm::vec3 position, float rotation, float scale, bool keep_rotating) : 
-        position(position), rotation(rotation), scale(scale), keep_rotating(keep_rotating)
+Box::Box(glm::vec3 position, float angle) : 
+        starting_position(position), starting_angle(angle)
 {
     // Define triangles
     float vertices[] = {
-        // 2D position    // texture coords
-        -.5f, -.5f, -.5f,      0.f, 0.f,      // bottom left
-         .5f, -.5f, -.5f,      1.f, 0.f,      // bottom right
-        -.5f,  .5f, -.5f,      0.f, 1.f,      // top left
-         .5f,  .5f, -.5f,      1.f, 1.f,      // top right
-                                              //
-        -.5f, -.5f, .5f,       0.f, 0.f,      // 
-         .5f, -.5f, .5f,       1.f, 0.f,      // 
-        -.5f,  .5f, .5f,       0.f, 1.f,      // 
-         .5f,  .5f, .5f,       1.f, 1.f,      // 
-                                              // 
-        -.5f,  .5f, .5f,       0.f, 0.f,      // 
-         .5f,  .5f, .5f,       1.f, 0.f,      // 
-        -.5f,  .5f, -.5f,      0.f, 1.f,      // 
-         .5f,  .5f, -.5f,      1.f, 1.f,      // 
-                                              //
-        -.5f, -.5f, .5f,       0.f, 0.f,      // 
-         .5f, -.5f, .5f,       1.f, 0.f,      // 
-        -.5f, -.5f, -.5f,      0.f, 1.f,      // 
-         .5f, -.5f, -.5f,      1.f, 1.f,      // 
-                                              //
-         .5f,  .5f,  .5f,      0.f, 0.f,      // 
-         .5f, -.5f,  .5f,      1.f, 0.f,      // 
-         .5f,  .5f, -.5f,      0.f, 1.f,      // 
-         .5f, -.5f, -.5f,      1.f, 1.f,      // 
-                                              //
-         -.5f,  .5f, .5f,      0.f, 0.f,      // 
-         -.5f, -.5f, .5f,      1.f, 0.f,      // 
-         -.5f,  .5f,-.5f,      0.f, 1.f,      // 
-         -.5f, -.5f,-.5f,      1.f, 1.f       // 
+        // 2D position      // Normal        // texture coords
+        -.5f, -.5f, -.5f,  0.f, 0.f, -1.f,    0.f, 0.f,      // bottom left
+         .5f, -.5f, -.5f,  0.f, 0.f, -1.f,    1.f, 0.f,      // bottom right
+        -.5f,  .5f, -.5f,  0.f, 0.f, -1.f,    0.f, 1.f,      // top left
+         .5f,  .5f, -.5f,  0.f, 0.f, -1.f,    1.f, 1.f,      // top right
+
+        -.5f, -.5f, .5f,   0.f, 0.f, 1.f,     0.f, 0.f,      // 
+         .5f, -.5f, .5f,   0.f, 0.f, 1.f,     1.f, 0.f,      // 
+        -.5f,  .5f, .5f,   0.f, 0.f, 1.f,     0.f, 1.f,      // 
+         .5f,  .5f, .5f,   0.f, 0.f, 1.f,     1.f, 1.f,      // 
+
+        -.5f,  .5f, .5f,   0.f, 1.f, 0.f,     0.f, 0.f,      // 
+         .5f,  .5f, .5f,   0.f, 1.f, 0.f,     1.f, 0.f,      // 
+        -.5f,  .5f, -.5f,  0.f, 1.f, 0.f,     0.f, 1.f,      // 
+         .5f,  .5f, -.5f,  0.f, 1.f, 0.f,     1.f, 1.f,      // 
+
+        -.5f, -.5f, .5f,   0.f, -1.f, 0.f,    0.f, 0.f,      // 
+         .5f, -.5f, .5f,   0.f, -1.f, 0.f,    1.f, 0.f,      // 
+        -.5f, -.5f, -.5f,  0.f, -1.f, 0.f,    0.f, 1.f,      // 
+         .5f, -.5f, -.5f,  0.f, -1.f, 0.f,    1.f, 1.f,      // 
+
+         .5f,  .5f,  .5f,  1.f, 0.f, 0.f,    0.f, 0.f,      // 
+         .5f, -.5f,  .5f,  1.f, 0.f, 0.f,    1.f, 0.f,      // 
+         .5f,  .5f, -.5f,  1.f, 0.f, 0.f,    0.f, 1.f,      // 
+         .5f, -.5f, -.5f,  1.f, 0.f, 0.f,    1.f, 1.f,      // 
+
+         -.5f,  .5f, .5f,  -1.f, 0.f, 0.f,     0.f, 0.f,      // 
+         -.5f, -.5f, .5f,  -1.f, 0.f, 0.f,     1.f, 0.f,      // 
+         -.5f,  .5f,-.5f,  -1.f, 0.f, 0.f,     0.f, 1.f,      // 
+         -.5f, -.5f,-.5f,  -1.f, 0.f, 0.f,     1.f, 1.f       // 
     };
-    size_t stride = 5; // number of columns above
+    size_t stride = 8; // number of columns above
     uint indices[] = {
         0, 1, 2, 1, 2, 3, // back
         4, 5, 6, 5, 6, 7, // front
@@ -72,9 +72,19 @@ Box::Box(glm::vec3 position, float rotation, float scale, bool keep_rotating) :
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    // Set vertex attribute: texture coordinates
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride * sizeof(float), (void*)(3 * sizeof(float)));
+    // Set vertex attribute: normals
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+
+    // Set vertex attribute: texture coordinates
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+    // Start with the identity matrix
+    // Set starting position in world space
+    model = glm::mat4(1.f); 
+    model = glm::translate(model, starting_position); 
+    model = glm::rotate(model, starting_angle * -PI / 3, glm::vec3(1.f, 2.f, 0.f));
 }
 
 Box::~Box()
@@ -86,19 +96,9 @@ Box::~Box()
 
 void Box::update(float delta_time)
 {
-    // Start with the identity matrix
-    model = glm::mat4(1.f); 
-    
-    // Set position in world space
-    model = glm::translate(model, position); 
-    model = glm::scale(model, glm::vec3(scale));
-    
     // Set rotation
-    if (keep_rotating)
-    {
-        rotation += delta_time * rot_speed;
-    }
-    model = glm::rotate(model,  rotation * -PI / 3, glm::vec3(1.f, 2.f, 0.f));
+    float angle = delta_time * rot_speed;
+    model = glm::rotate(model,  angle * -PI / 3, glm::vec3(1.f, 2.f, 0.f));
 }
 
 glm::mat4 Box::get_model() const
@@ -112,3 +112,7 @@ void Box::draw() const
     glDrawElements(GL_TRIANGLES, num_vertices, GL_UNSIGNED_INT, 0);
 }
 
+glm::vec3 Box::get_position() const
+{
+    return model * glm::vec4(starting_position, 1.f);
+}

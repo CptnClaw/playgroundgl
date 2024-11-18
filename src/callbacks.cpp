@@ -24,7 +24,7 @@ float delta = .05f;
 bool mouse_entered = false;
 double last_mouse_x, last_mouse_y;
 float pitch = 0.f, yaw = PI / 2.f;
-float mouse_sensitivity = .005f;
+float mouse_sensitivity = .01f;
 float zoom = 1;
 float scroll_sensitivity = 0.1f;
 

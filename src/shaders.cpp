@@ -8,7 +8,7 @@
 void Shaders::uniform_vec3(const std::string &uniform_name, glm::vec3 v) const
 {
     int unif_loc = glGetUniformLocation(id, uniform_name.c_str());
-    glUniformMatrix4fv(unif_loc, 1, GL_FALSE, glm::value_ptr(v));
+    glUniform3f(unif_loc, v.x, v.y, v.z);
 }
 
 void Shaders::uniform_mat4(const std::string &uniform_name, glm::mat4 matrix) const
@@ -80,7 +80,7 @@ uint compile_shader(std::string shader_path, GLenum shader_type)
     if (!success)
     {
         glGetShaderInfoLog(shader, 512, nullptr, compilation_errs);
-        std::cout << "Error compiling shader: " << std::endl;
+        std::cout << "Error compiling shader (" << shader_path << "): " << std::endl;
         std::cout << compilation_errs << std::endl << std::endl;
         return 0;
     }
