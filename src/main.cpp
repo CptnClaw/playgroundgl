@@ -12,12 +12,11 @@
 
 void render(const Shaders &prog, const Box &box, const Camera &camera)
 {
-    glm::mat4 model = box.get_model();
-    glm::mat4 view = camera.get_view();
-    glm::mat4 projection = camera.get_projection();
-    glm::mat4 mvp = projection * view * model;
-    prog.uniform_mat4("model", model);
+    glm::mat4 mv = camera.get_view() * box.get_model();
+    glm::mat4 mvp = camera.get_projection() * mv;
+    prog.uniform_mat4("mv", mv);
     prog.uniform_mat4("mvp", mvp);
+    prog.uniform_mat3("mv_for_normals", glm::transpose(glm::inverse(mv)));
     box.draw();
 }
 
@@ -93,7 +92,7 @@ int main()
 
         // Render boxes
         program.use();
-        program.uniform_vec3("light_position", lightsource.get_position());
+        program.uniform_vec3("light_position", lightsource.get_position(camera.get_view()));
         program.uniform_vec3("light_color", lightsource.get_color());
         program.uniform_modulation("modulation");
         for (int i = 0; i < num_boxes; i++)

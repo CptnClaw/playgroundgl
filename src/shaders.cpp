@@ -5,6 +5,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "shaders.h"
 
+#define MAX_SHADER_LENGTH 1024 * 10
+
 void Shaders::uniform_vec3(const std::string &uniform_name, glm::vec3 v) const
 {
     int unif_loc = glGetUniformLocation(id, uniform_name.c_str());
@@ -15,6 +17,12 @@ void Shaders::uniform_mat4(const std::string &uniform_name, glm::mat4 matrix) co
 {
     int unif_loc = glGetUniformLocation(id, uniform_name.c_str());
     glUniformMatrix4fv(unif_loc, 1, GL_FALSE, glm::value_ptr(matrix));
+}
+
+void Shaders::uniform_mat3(const std::string &uniform_name, glm::mat3 matrix) const
+{
+    int unif_loc = glGetUniformLocation(id, uniform_name.c_str());
+    glUniformMatrix3fv(unif_loc, 1, GL_FALSE, glm::value_ptr(matrix));
 }
 
 void Shaders::uniform_float(const std::string &uniform_name, float f) const
@@ -58,7 +66,7 @@ uint compile_shader(std::string shader_path, GLenum shader_type)
     int success;
     char compilation_errs[512];
     FILE *shader_file;
-    char shader_txt[1024];
+    char shader_txt[MAX_SHADER_LENGTH];
 
     // Read shader code
     shader_file = fopen(shader_path.c_str(), "r");
@@ -67,7 +75,7 @@ uint compile_shader(std::string shader_path, GLenum shader_type)
         std::cout << "Cannot find shader file: " << shader_path << std::endl;
         return 0;
     }
-    int filesize = fread(shader_txt, sizeof(char), 1024, shader_file);
+    int filesize = fread(shader_txt, sizeof(char), MAX_SHADER_LENGTH, shader_file);
     shader_txt[filesize] = '\0';
     fclose(shader_file);
     const char *shader_src = shader_txt;

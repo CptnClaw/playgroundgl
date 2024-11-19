@@ -30,3 +30,8 @@ void LightSource::update(float delta_time)
     rotation_matrix = glm::rotate(rotation_matrix, angle, glm::vec3(0.f, 0.f, 1.f));
     model = rotation_matrix * model;
 }
+
+glm::vec3 LightSource::get_position(glm::mat4 view) const
+{
+    return view * model * glm::vec4(starting_position, 1.f);
+}

@@ -1,10 +1,10 @@
 #version 330 core
 
 in vec2 vertex_texture;
-in vec3 vertex_normal;
-in vec3 vertex_position;
+in vec3 vertex_normal; // in view space
+in vec3 vertex_position; // in view space
 
-uniform vec3 light_position;
+uniform vec3 light_position; // in view space
 uniform vec3 light_color;
 
 uniform sampler2D texture_img1;
@@ -26,9 +26,16 @@ void main()
     
     // Diffuse term
     vec3 light_direction = normalize(light_position - vertex_position);
-    float costheta = max(0, dot(light_direction, vertex_normal));
-    vec4 diffuse = 0.9 * costheta * vec4(light_color, 1.0);
+    float diffuse_intensity = max(0, dot(light_direction, vertex_normal));
+    vec4 diffuse = 0.9 * diffuse_intensity * vec4(light_color, 1.0);
+
+    // Specular term
+    vec3 camera_direction = normalize(-vertex_position); // Camera is in origin (view space)
+    vec3 reflected_light_direction = reflect(-light_direction, vertex_normal);
+    float specular_intensity = max(0, dot(camera_direction, reflected_light_direction));
+    specular_intensity = pow(specular_intensity, 64);
+    vec4 specular = 0.5 * specular_intensity * vec4(light_color, 1.0);
 
     // All together
-    fragColor = (ambient + diffuse) * texColor;
+    fragColor = (ambient + diffuse) * texColor + specular;
 }

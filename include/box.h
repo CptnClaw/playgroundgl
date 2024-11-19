@@ -15,7 +15,7 @@ public:
     // Update box model matrix
     virtual void update(float delta_time);
 
-    // Returns model matrix (world space)
+    // Returns model matrix that transforms objects to world space
     glm::mat4 get_model() const;
 
     // Draw box
