@@ -1,41 +1,49 @@
 #version 330 core
 
+struct Material
+{
+    sampler2D diffuse_map;
+    sampler2D specular_map;
+    float shininess;
+};
+struct Light
+{
+    float ambient_intensity;
+    float diffuse_intensity;
+    float specular_intensity;
+    vec3 position;
+};
+
 in vec2 vertex_texture;
 in vec3 vertex_normal; // in view space
 in vec3 vertex_position; // in view space
 
-uniform vec3 light_position; // in view space
-uniform vec3 light_color;
-
-uniform sampler2D texture_img1;
-uniform sampler2D texture_img2;
-uniform float modulation;
+uniform Light light;
+uniform Material material;
 
 out vec4 fragColor;
 
 void main()
 {
-    // Calculate fragment texture
-    vec4 color1 = texture(texture_img1, vertex_texture);
-    vec4 color2 = texture(texture_img2, vec2(1 - vertex_texture.x, 1 - vertex_texture.y));
-    float blend = pow(1 - modulation, 2);
-    vec4 texColor = mix(color1, color2, blend);
+    // Read textures
+    vec4 diffuse_color = texture(material.diffuse_map, vertex_texture);
+    vec4 specular_color = texture(material.specular_map, vertex_texture);
     
     // Ambient term
-    vec4 ambient = 0.1 * vec4(1.0, 1.0, 1.0, 1.0); // Ambient white light
+    vec3 ambient = vec3(light.ambient_intensity);
     
     // Diffuse term
-    vec3 light_direction = normalize(light_position - vertex_position);
-    float diffuse_intensity = max(0, dot(light_direction, vertex_normal));
-    vec4 diffuse = 0.9 * diffuse_intensity * vec4(light_color, 1.0);
+    vec3 light_direction = normalize(light.position - vertex_position);
+    float diffuse_geometric_term = max(0, dot(light_direction, vertex_normal));
+    vec3 diffuse = vec3(light.diffuse_intensity * diffuse_geometric_term);
 
     // Specular term
     vec3 camera_direction = normalize(-vertex_position); // Camera is in origin (view space)
     vec3 reflected_light_direction = reflect(-light_direction, vertex_normal);
-    float specular_intensity = max(0, dot(camera_direction, reflected_light_direction));
-    specular_intensity = pow(specular_intensity, 64);
-    vec4 specular = 0.5 * specular_intensity * vec4(light_color, 1.0);
+    float specular_geometric_term = max(0, dot(camera_direction, reflected_light_direction));
+    specular_geometric_term = pow(specular_geometric_term, material.shininess * 128.0);
+    vec3 specular = vec3(light.specular_intensity * specular_geometric_term);
 
     // All together
-    fragColor = (ambient + diffuse) * texColor + specular;
+    fragColor = vec4(ambient + diffuse, 1.0) * diffuse_color + vec4(specular, 1.0) * specular_color;
 }

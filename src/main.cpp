@@ -63,11 +63,11 @@ int main()
     LightSource lightsource(glm::vec3(0.f, 2.f, -4.f), glm::vec3(1.f, 1.f, 1.f));
 
     // Load and activate texture units
-    Texture tex1("resources/crate1.png", true);
-    Texture tex2("resources/crate2.png", true);
+    Texture tex1("resources/crate2.png", true);
+    Texture tex2("resources/crate2_specular.png", true);
     program.use();
-    program.uniform_texture("texture_img1", tex1);
-    program.uniform_texture("texture_img2", tex2);
+    program.uniform_texture("material.diffuse_map", tex1);
+    program.uniform_texture("material.specular_map", tex2);
 
     // Create camera
     glm::vec3 camera_position(0.f, 0.f, -10.f);
@@ -92,9 +92,11 @@ int main()
 
         // Render boxes
         program.use();
-        program.uniform_vec3("light_position", lightsource.get_position(camera.get_view()));
-        program.uniform_vec3("light_color", lightsource.get_color());
-        program.uniform_modulation("modulation");
+        program.uniform_float("light.ambient_intensity", 0.2);
+        program.uniform_float("light.diffuse_intensity", 0.8);
+        program.uniform_float("light.specular_intensity", 0.5);
+        program.uniform_vec3("light.position", lightsource.get_position(camera.get_view()));
+        program.uniform_float("material.shininess", .5f);
         for (int i = 0; i < num_boxes; i++)
         {
             boxes[i].update(delta_time);
