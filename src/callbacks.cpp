@@ -20,6 +20,7 @@ bool is_wireframe = false;
 int move_x = 0, move_y = 0;
 float rot_speed = .1f;
 float delta = .05f;
+float active_range = 0.5f;
 
 bool mouse_entered = false;
 double last_mouse_x, last_mouse_y;
@@ -58,10 +59,14 @@ void key_callback(GLFWwindow *window, int key, [[maybe_unused]] int scancode, [[
         modify_by_action(action, 1, move_x);
         break;
     case GLFW_KEY_EQUAL:
-        rot_speed += delta;
+        active_range += delta;
+        if (active_range > 1.0f) active_range = 1.0f;
+        std::cout << active_range << std::endl;
         break;
     case GLFW_KEY_MINUS:
-        rot_speed -= delta;
+        active_range -= delta;
+        if (active_range < 0.0f) active_range = 0.0f;
+        std::cout << active_range << std::endl;
         break;
     default:
         break;

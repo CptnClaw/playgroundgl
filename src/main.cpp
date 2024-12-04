@@ -9,6 +9,7 @@
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
 
+extern float active_range;
 
 void render(const Shaders &prog, const Box &box, const Camera &camera)
 {
@@ -65,10 +66,10 @@ int main()
     program_light.uniform_vec3("light_color", lightsource.get_color());
     program.use();
     program.uniform_vec3("light.color", lightsource.get_color());
-    program.uniform_float("light.ambient_intensity", 0.2);
-    program.uniform_float("light.diffuse_intensity", 0.8);
+    program.uniform_float("light.ambient_intensity", 0.1);
+    program.uniform_float("light.diffuse_intensity", 0.9);
     program.uniform_float("light.specular_intensity", 0.5);
-    glm::vec4 sun_direction(0.f, -1.f, 0.f, 0.f);
+    // glm::vec4 sun_direction(0.f, -1.f, 0.f, 0.f);
 
     // Load and activate texture units
     Texture tex1("resources/crate2.png", true);
@@ -96,12 +97,13 @@ int main()
         // Render light source
         program_light.use();
         lightsource.update(delta_time);
-        // render(program_light, lightsource, camera);
+        render(program_light, lightsource, camera);
 
         // Render boxes
         program.use();
-        // program.uniform_vec4("light.position_or_direction", lightsource.get_position(camera.get_view()));
-        program.uniform_vec4("light.position_or_direction", camera.get_view() * sun_direction);
+        program.uniform_vec4("light.position_or_direction", lightsource.get_position(camera.get_view()));
+        // program.uniform_vec4("light.position_or_direction", camera.get_view() * sun_direction);
+        program.uniform_float("light.active_range", active_range);
         for (int i = 0; i < num_boxes; i++)
         {
             boxes[i].update(delta_time);
