@@ -13,6 +13,12 @@ void Shaders::uniform_vec3(const std::string &uniform_name, glm::vec3 v) const
     glUniform3f(unif_loc, v.x, v.y, v.z);
 }
 
+void Shaders::uniform_vec4(const std::string &uniform_name, glm::vec4 v) const
+{
+    int unif_loc = glGetUniformLocation(id, uniform_name.c_str());
+    glUniform4f(unif_loc, v.x, v.y, v.z, v.w);
+}
+
 void Shaders::uniform_mat4(const std::string &uniform_name, glm::mat4 matrix) const
 {
     int unif_loc = glGetUniformLocation(id, uniform_name.c_str());

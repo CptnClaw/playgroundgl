@@ -22,7 +22,7 @@ public:
     void draw() const;
     
     // Returns box position
-    glm::vec3 get_position() const;
+    glm::vec4 get_position() const;
 
 protected:
     // World matrix parameter

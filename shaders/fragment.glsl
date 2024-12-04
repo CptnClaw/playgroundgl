@@ -12,7 +12,7 @@ struct Light
     float diffuse_intensity;
     float specular_intensity;
     vec3 color;
-    vec3 position;
+    vec4 position_or_direction; // role determined by w coordinate
 };
 
 in vec2 vertex_texture;
@@ -34,7 +34,8 @@ void main()
     vec3 ambient = vec3(light.ambient_intensity);
     
     // Diffuse term
-    vec3 light_direction = normalize(light.position - vertex_position);
+    vec3 light_direction = normalize(- light.position_or_direction.xyz) * (1.0 - light.position_or_direction.w); // directional light
+    light_direction += normalize(light.position_or_direction.xyz - vertex_position).xyz * (light.position_or_direction.w); // point light
     float diffuse_geometric_term = max(0, dot(light_direction, vertex_normal));
     vec3 diffuse = vec3(light.diffuse_intensity * diffuse_geometric_term);
 

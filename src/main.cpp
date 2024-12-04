@@ -47,11 +47,11 @@ int main()
     float rotation = 0.f;
     Box boxes[] = {
         Box(glm::vec3(0.0f, 0.0f, 0.0f), rotation++),
-        Box(glm::vec3(2.0f, 5.0f, -15.0f), rotation++),
+        Box(glm::vec3(5.0f, 5.0f, 3.0f), rotation++),
         Box(glm::vec3(-1.5f, -2.2f, -2.5f), rotation++),
-        Box(glm::vec3(-3.8f, -2.0f, -12.3f), rotation++),
+        Box(glm::vec3(-3.8f, -2.0f, -.3f), rotation++),
         Box(glm::vec3(2.4f, -0.4f, -3.5f), rotation++),
-        Box(glm::vec3(-1.7f, 3.0f, -7.5f), rotation++),
+        Box(glm::vec3(-1.f, 3.0f, 7.5f), rotation++),
         Box(glm::vec3(1.3f, -2.0f, -2.5f), rotation++),
         Box(glm::vec3(1.5f, 2.0f, -2.5f), rotation++),
         Box(glm::vec3(1.5f, 0.2f, -1.5f), rotation++),
@@ -61,6 +61,14 @@ int main()
     
     // Construct light source to render
     LightSource lightsource(glm::vec3(0.f, 2.f, -4.f), glm::vec3(1.f, 1.f, 1.f));
+    program_light.use();
+    program_light.uniform_vec3("light_color", lightsource.get_color());
+    program.use();
+    program.uniform_vec3("light.color", lightsource.get_color());
+    program.uniform_float("light.ambient_intensity", 0.2);
+    program.uniform_float("light.diffuse_intensity", 0.8);
+    program.uniform_float("light.specular_intensity", 0.5);
+    glm::vec4 sun_direction(0.f, -1.f, 0.f, 0.f);
 
     // Load and activate texture units
     Texture tex1("resources/crate2.png", true);
@@ -68,6 +76,7 @@ int main()
     program.use();
     program.uniform_texture("material.diffuse_map", tex1);
     program.uniform_texture("material.specular_map", tex2);
+    program.uniform_float("material.shininess", .5f);
 
     // Create camera
     glm::vec3 camera_position(0.f, 0.f, -10.f);
@@ -87,17 +96,12 @@ int main()
         // Render light source
         program_light.use();
         lightsource.update(delta_time);
-        program_light.uniform_vec3("light_color", lightsource.get_color());
-        render(program_light, lightsource, camera);
+        // render(program_light, lightsource, camera);
 
         // Render boxes
         program.use();
-        program.uniform_float("light.ambient_intensity", 0.2);
-        program.uniform_float("light.diffuse_intensity", 0.8);
-        program.uniform_float("light.specular_intensity", 0.5);
-        program.uniform_vec3("light.position", lightsource.get_position(camera.get_view()));
-        program.uniform_vec3("light.color", lightsource.get_color());
-        program.uniform_float("material.shininess", .5f);
+        // program.uniform_vec4("light.position_or_direction", lightsource.get_position(camera.get_view()));
+        program.uniform_vec4("light.position_or_direction", camera.get_view() * sun_direction);
         for (int i = 0; i < num_boxes; i++)
         {
             boxes[i].update(delta_time);

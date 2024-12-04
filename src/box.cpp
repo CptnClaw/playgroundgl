@@ -112,7 +112,7 @@ void Box::draw() const
     glDrawElements(GL_TRIANGLES, num_vertices, GL_UNSIGNED_INT, 0);
 }
 
-glm::vec3 Box::get_position() const
+glm::vec4 Box::get_position() const
 {
     return model * glm::vec4(starting_position, 1.f);
 }
