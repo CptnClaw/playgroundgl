@@ -96,6 +96,7 @@ int main()
         program.uniform_float("light.diffuse_intensity", 0.8);
         program.uniform_float("light.specular_intensity", 0.5);
         program.uniform_vec3("light.position", lightsource.get_position(camera.get_view()));
+        program.uniform_vec3("light.color", lightsource.get_color());
         program.uniform_float("material.shininess", .5f);
         for (int i = 0; i < num_boxes; i++)
         {

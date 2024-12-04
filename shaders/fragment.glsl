@@ -11,6 +11,7 @@ struct Light
     float ambient_intensity;
     float diffuse_intensity;
     float specular_intensity;
+    vec3 color;
     vec3 position;
 };
 
@@ -42,7 +43,7 @@ void main()
     vec3 reflected_light_direction = reflect(-light_direction, vertex_normal);
     float specular_geometric_term = max(0, dot(camera_direction, reflected_light_direction));
     specular_geometric_term = pow(specular_geometric_term, material.shininess * 128.0);
-    vec3 specular = vec3(light.specular_intensity * specular_geometric_term);
+    vec3 specular = (light.specular_intensity * specular_geometric_term) * light.color;
 
     // All together
     fragColor = vec4(ambient + diffuse, 1.0) * diffuse_color + vec4(specular, 1.0) * specular_color;
