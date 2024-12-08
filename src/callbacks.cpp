@@ -17,15 +17,17 @@ void modify_by_action(int action, int value, int &to_modify)
 }
 
 bool is_wireframe = false;
+bool is_flashlight = false;
 int move_x = 0, move_y = 0;
-float rot_speed = .1f;
-float delta = .05f;
+float rot_speed = 0.f;
+float delta = .1f;
 float active_range = 0.5f;
 
 bool mouse_entered = false;
 double last_mouse_x, last_mouse_y;
-float pitch = 0.f, yaw = PI / 2.f;
-float mouse_sensitivity = .01f;
+float camera_pitch = 0.f, camera_yaw = PI / 2.f;
+float flashlight_pitch = 0.f, flashlight_yaw = -PI / 2.f;
+float mouse_sensitivity = .005f;
 float zoom = 1;
 float scroll_sensitivity = 0.1f;
 
@@ -39,11 +41,21 @@ void key_callback(GLFWwindow *window, int key, [[maybe_unused]] int scancode, [[
         glfwSetWindowShouldClose(window, GLFW_TRUE);
         break;
     case GLFW_KEY_SPACE:
+        // Toggle wireframe
         if (action == GLFW_PRESS)
         {
             if (is_wireframe)   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             else                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             is_wireframe = !is_wireframe;
+        }
+        break;
+    case GLFW_KEY_F:
+        // Toggle flashlight
+        if (action == GLFW_PRESS)
+        {
+            is_flashlight = !is_flashlight;
+            flashlight_pitch = 0.f;
+            flashlight_yaw = -PI / 2.f;
         }
         break;
     case GLFW_KEY_W:
@@ -59,14 +71,18 @@ void key_callback(GLFWwindow *window, int key, [[maybe_unused]] int scancode, [[
         modify_by_action(action, 1, move_x);
         break;
     case GLFW_KEY_EQUAL:
-        active_range += delta;
-        if (active_range > 1.0f) active_range = 1.0f;
-        std::cout << active_range << std::endl;
+        rot_speed += delta;
         break;
     case GLFW_KEY_MINUS:
+        rot_speed -= delta;
+        break;
+    case GLFW_KEY_K:
+        active_range += delta;
+        if (active_range > 1.0f) active_range = 1.0f;
+        break;
+    case GLFW_KEY_J:
         active_range -= delta;
         if (active_range < 0.0f) active_range = 0.0f;
-        std::cout << active_range << std::endl;
         break;
     default:
         break;
@@ -81,11 +97,24 @@ void fb_sz_callback([[maybe_unused]] GLFWwindow *window, int width, int height)
 
 void mouse_callback([[maybe_unused]] GLFWwindow *window, double x, double y)
 {
+    // Choose if mouse movements are tied to camera or flashlight
+    // (state machine)
+    float *modifier_pitch = &camera_pitch;
+    float *modifier_yaw = &camera_yaw;
+    if (is_flashlight)
+    {
+        modifier_pitch = &flashlight_pitch;
+        modifier_yaw = &flashlight_yaw;
+    }
+
+    // Update selected pitch and yaw values according to mouse movements
     if (mouse_entered)
     {
-        pitch += (float)(last_mouse_y - y) * mouse_sensitivity;
-        yaw += (float)(x - last_mouse_x) * mouse_sensitivity;
+        *modifier_pitch += (float)(last_mouse_y - y) * mouse_sensitivity;
+        *modifier_yaw += (float)(x - last_mouse_x) * mouse_sensitivity;
     }
+    
+    // Remember current mouse coordinates
     mouse_entered = true;
     last_mouse_x = x;
     last_mouse_y = y;

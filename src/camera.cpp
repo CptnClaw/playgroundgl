@@ -9,7 +9,7 @@
 #define MOVE_SPEED 3.f
 
 extern int move_x, move_y;
-extern float pitch, yaw;
+extern float camera_pitch, camera_yaw;
 extern float zoom;
 
 Camera::Camera(glm::vec3 position, glm::vec3 direction, glm::vec3 world_up, float aspect_ratio) : 
@@ -20,12 +20,14 @@ Camera::Camera(glm::vec3 position, glm::vec3 direction, glm::vec3 world_up, floa
 
 void Camera::update(float delta_time)
 {
+    // Clamp camera pitch to [-pi/2, pi/2].
+    if (camera_pitch > ALMOST_PI / 2) camera_pitch = ALMOST_PI / 2;
+    else if (camera_pitch < -(ALMOST_PI) / 2) camera_pitch = -(ALMOST_PI) / 2;
+
     // Update view matrix
-    if (pitch > ALMOST_PI / 2) pitch = ALMOST_PI / 2;
-    else if (pitch < -(ALMOST_PI) / 2) pitch = -(ALMOST_PI) / 2;
-    direction.x = cos(yaw) * cos(pitch);
-    direction.y = sin(pitch);
-    direction.z = sin(yaw) * cos(pitch);
+    direction.x = cos(camera_yaw) * cos(camera_pitch);
+    direction.y = sin(camera_pitch);
+    direction.z = sin(camera_yaw) * cos(camera_pitch);
     direction = glm::normalize(direction);
     glm::vec3 camera_right = glm::normalize(glm::cross(direction, world_up));
     position = position + 

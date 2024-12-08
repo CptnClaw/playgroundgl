@@ -5,9 +5,11 @@
 #include "window.h"
 #include "camera.h"
 #include "lightsource.h"
+#include "flashlight.h"
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
+#define PI 3.14159f
 
 extern float active_range;
 
@@ -60,7 +62,8 @@ int main()
     };
     int num_boxes = sizeof(boxes) / sizeof(Box);
     
-    // Construct light source to render
+    // Construct light sources to render
+    // Point light
     LightSource lightsource(glm::vec3(0.f, 2.f, -4.f), glm::vec3(1.f, 1.f, 1.f));
     program_light.use();
     program_light.uniform_vec3("light_color", lightsource.get_color());
@@ -69,7 +72,10 @@ int main()
     program.uniform_float("light.ambient_intensity", 0.1);
     program.uniform_float("light.diffuse_intensity", 0.9);
     program.uniform_float("light.specular_intensity", 0.5);
-    // glm::vec4 sun_direction(0.f, -1.f, 0.f, 0.f);
+    // Sunlight
+    glm::vec4 sun_direction(0.f, -1.f, 0.f, 0.f);
+    // Flashlight
+    Flashlight flashlight(-3.f*PI/25.f, 3.f*PI/25.f, -2.f*PI/3.f, -PI/3.f);
 
     // Load and activate texture units
     Texture tex1("resources/crate2.png", true);
@@ -101,8 +107,10 @@ int main()
 
         // Render boxes
         program.use();
-        program.uniform_vec4("light.position_or_direction", lightsource.get_position(camera.get_view()));
-        // program.uniform_vec4("light.position_or_direction", camera.get_view() * sun_direction);
+        program.uniform_vec4("light.position", lightsource.get_position(camera.get_view()));
+        program.uniform_vec4("light.sun_direction", camera.get_view() * sun_direction);
+        glm::vec4 fl = flashlight.get_direction();
+        program.uniform_vec4("light.flashlight_direction", fl);
         program.uniform_float("light.active_range", active_range);
         for (int i = 0; i < num_boxes; i++)
         {
