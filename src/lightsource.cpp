@@ -5,6 +5,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #define PI 3.14159f
+extern float light_strength;
 
 LightSource::LightSource(glm::vec3 position, glm::vec3 color) :
     Box(position, 0.f), color(color), spin(0.5f)
@@ -31,7 +32,16 @@ void LightSource::update(float delta_time)
     model = rotation_matrix * model;
 }
 
-glm::vec4 LightSource::get_position(glm::mat4 view) const
+glm::vec3 LightSource::get_position(const glm::mat4 &view) const
 {
     return view * model * glm::vec4(starting_position, 1.f);
+}
+
+void LightSource::use(const Shaders &program, const glm::mat4 &view) const
+{
+    program.uniform_vec3("light.color", color);
+    program.uniform_float("light.diffuse_intensity", 0.9);
+    program.uniform_float("light.specular_intensity", 0.5);
+    program.uniform_float("light.strength", light_strength);
+    program.uniform_vec3("light.position", get_position(view));
 }

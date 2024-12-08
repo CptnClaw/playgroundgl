@@ -2,19 +2,21 @@
 #define FLASHLIGHT_H_
 
 #include <glm/glm.hpp>
+#include "shaders.h"
 
 class Flashlight
 {
 public:
     // Construct flashlight
     Flashlight(float min_pitch, float max_pitch, float min_yaw, float max_yaw);
-    
-    // Calculate direction based on flashlight_pitch and flashlight_yaw (extern vars from callback.cpp)
-    glm::vec4 get_direction();
+    void use(const Shaders &program) const;
 
 private:
     float min_pitch, max_pitch;
     float min_yaw, max_yaw;
+
+    // Calculate direction based on flashlight_pitch and flashlight_yaw (extern vars from callback.cpp)
+    glm::vec3 get_direction() const;
 };
 
 

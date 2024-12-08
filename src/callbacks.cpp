@@ -18,10 +18,11 @@ void modify_by_action(int action, int value, int &to_modify)
 
 bool is_wireframe = false;
 bool is_flashlight = false;
+bool is_sun = true;
 int move_x = 0, move_y = 0;
 float rot_speed = 0.f;
 float delta = .1f;
-float active_range = 0.5f;
+float light_strength = 0.5f;
 
 bool mouse_entered = false;
 double last_mouse_x, last_mouse_y;
@@ -40,7 +41,7 @@ void key_callback(GLFWwindow *window, int key, [[maybe_unused]] int scancode, [[
     case GLFW_KEY_CAPS_LOCK:
         glfwSetWindowShouldClose(window, GLFW_TRUE);
         break;
-    case GLFW_KEY_SPACE:
+    case GLFW_KEY_1:
         // Toggle wireframe
         if (action == GLFW_PRESS)
         {
@@ -49,13 +50,20 @@ void key_callback(GLFWwindow *window, int key, [[maybe_unused]] int scancode, [[
             is_wireframe = !is_wireframe;
         }
         break;
-    case GLFW_KEY_F:
+    case GLFW_KEY_2:
         // Toggle flashlight
         if (action == GLFW_PRESS)
         {
             is_flashlight = !is_flashlight;
             flashlight_pitch = 0.f;
             flashlight_yaw = -PI / 2.f;
+        }
+        break;
+    case GLFW_KEY_3:
+        // Toggle sun
+        if (action == GLFW_PRESS)
+        {
+            is_sun = !is_sun;
         }
         break;
     case GLFW_KEY_W:
@@ -77,12 +85,12 @@ void key_callback(GLFWwindow *window, int key, [[maybe_unused]] int scancode, [[
         rot_speed -= delta;
         break;
     case GLFW_KEY_K:
-        active_range += delta;
-        if (active_range > 1.0f) active_range = 1.0f;
+        light_strength += delta;
+        if (light_strength > 1.0f) light_strength = 1.0f;
         break;
     case GLFW_KEY_J:
-        active_range -= delta;
-        if (active_range < 0.0f) active_range = 0.0f;
+        light_strength -= delta;
+        if (light_strength < 0.0f) light_strength = 0.0f;
         break;
     default:
         break;
