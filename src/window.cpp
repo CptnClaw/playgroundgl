@@ -39,13 +39,13 @@ Window::Window(uint width, uint height, bool &success)
     glViewport(0, 0, width, height);
     glfwSwapInterval(1);
     glEnable(GL_DEPTH_TEST);
-    glfwSetInputMode(handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     
     // Set callbacks
     glfwSetKeyCallback(handle, key_callback);
     glfwSetFramebufferSizeCallback(handle, fb_sz_callback);
     glfwSetCursorPosCallback(handle, mouse_callback);
     glfwSetScrollCallback(handle, scroll_callback);
+    glfwSetWindowFocusCallback(handle, focus_callback);
     
     success = true;
 }

@@ -24,7 +24,7 @@ float rot_speed = 0.f;
 float delta = .1f;
 float light_strength = 0.5f;
 
-bool mouse_entered = false;
+bool mouse_entered_focus = true;
 double last_mouse_x, last_mouse_y;
 float camera_pitch = 0.f, camera_yaw = PI / 2.f;
 float flashlight_pitch = 0.f, flashlight_yaw = -PI / 2.f;
@@ -116,14 +116,15 @@ void mouse_callback([[maybe_unused]] GLFWwindow *window, double x, double y)
     }
 
     // Update selected pitch and yaw values according to mouse movements
-    if (mouse_entered)
+    // Except for when mouse just entered focus, to avoid sudden jumps
+    if (!mouse_entered_focus)
     {
         *modifier_pitch += (float)(last_mouse_y - y) * mouse_sensitivity;
         *modifier_yaw += (float)(x - last_mouse_x) * mouse_sensitivity;
     }
     
     // Remember current mouse coordinates
-    mouse_entered = true;
+    mouse_entered_focus = false;
     last_mouse_x = x;
     last_mouse_y = y;
 }
@@ -131,4 +132,22 @@ void mouse_callback([[maybe_unused]] GLFWwindow *window, double x, double y)
 void scroll_callback([[maybe_unused]] GLFWwindow *window, [[maybe_unused]] double xoffset, double yoffset)
 {
     zoom -= yoffset * scroll_sensitivity;
+}
+
+void focus_callback([[maybe_unused]] GLFWwindow *window, int focused)
+{
+    if (focused)
+    {
+        // Lock mouse only after one window defocusing event.
+        // Workaround for a hyprland/wayland bug?
+        if (!mouse_entered_focus) 
+        {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        }
+        mouse_entered_focus = true;
+    }
+    else
+    {
+        mouse_entered_focus = false;
+    }
 }
