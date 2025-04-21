@@ -1,8 +1,13 @@
 #version 330 core
 struct Material
 {
-    sampler2D diffuse_map;
-    sampler2D specular_map;
+    // A maximum of 3 textures per type
+    sampler2D diffuse_map1;
+    sampler2D diffuse_map2;
+    sampler2D diffuse_map3;
+    sampler2D specular_map1;
+    sampler2D specular_map2;
+    sampler2D specular_map3;
     float shininess;
 };
 struct LightSource
@@ -31,14 +36,14 @@ out vec4 fragColor;
 
 vec3 CalcDiffuse(vec3 light_direction, vec3 target_normal)
 {
-    return vec3(max(0, dot(light_direction, target_normal)));
+    return vec3(clamp(dot(light_direction, target_normal), 0.0, 1.0));
 }
 
 vec3 CalcSpecular(vec3 light_direction, vec3 target, vec3 target_normal)
 {
     vec3 reflected_light_direction = reflect(-light_direction, target_normal);
     vec3 camera_direction = normalize(-target); // Camera is in origin (view space)
-    float specular_geometric_term = max(0, dot(camera_direction, reflected_light_direction));
+    float specular_geometric_term = clamp(dot(camera_direction, reflected_light_direction), 0.0, 1.0);
     return vec3(pow(specular_geometric_term, material.shininess * 128.0));
 }
 
@@ -69,12 +74,12 @@ vec3 CalcPointLight(LightSource source, vec3 target, vec3 target_normal, vec3 di
 
 vec3 CalcFlashlight(LightSource source, vec3 target, vec3 diffuse_color)
 {
-    // Calculate light in a small disk in front of camera
+    // Calculate light in a small disk in front of camera, with a smooth falloff around edges
     // Light is flat, without specular component
     vec3 camera_direction = normalize(-target); // Camera is in origin (view space)
     vec3 flashlight_direction = normalize(-source.direction);
     float cosine_similarity = dot(camera_direction, flashlight_direction);
-    float flashlight_intensity = pow(clamp(cosine_similarity + 0.01, 0.0, 1.0), 100); // Light up a disk with fast decaying surrounding
+    float flashlight_intensity = pow(clamp(cosine_similarity + 0.01, 0.0, 1.0), 100); // Light up a disk with fast decaying edgea
 
     // Attenuate light using distance from fragment to camera
     float attenuation = CalcAttenuation(length(target), source.strength);
@@ -93,8 +98,8 @@ vec3 CalcSun(LightSource source, vec3 target, vec3 target_normal, vec3 diffuse_c
 void main()
 {
     // Read textures
-    vec3 diffuse_color = texture(material.diffuse_map, vertex_texture).rgb;
-    vec3 specular_color = texture(material.specular_map, vertex_texture).rgb;
+    vec3 diffuse_color = texture(material.diffuse_map1, vertex_texture).rgb;
+    vec3 specular_color = texture(material.specular_map1, vertex_texture).rgb;
 
     // Ambient light
     vec3 final_color = vec3(ambient_light_intensity) * diffuse_color;

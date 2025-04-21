@@ -6,3 +6,4 @@ Playground for learning OpenGL
 - GLFW
 - GLAD
 - GLM
+- assimp

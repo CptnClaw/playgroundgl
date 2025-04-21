@@ -10,7 +10,7 @@ public:
     Box(glm::vec3 position, float angle);
 
     // Free resources
-    ~Box();
+    virtual ~Box();
 
     // Update box model matrix
     virtual void update(float delta_time);

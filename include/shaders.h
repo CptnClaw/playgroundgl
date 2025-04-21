@@ -26,11 +26,9 @@ class Shaders
         void uniform_float(const std::string &uniform_name, float f) const;
         void uniform_modulation(const std::string &uniform_name) const;
         void uniform_int(const std::string &uniform_name, int i) const;
-        void uniform_texture(const std::string &uniform_name, const Texture &tex);
 
     private:
         int id; // OpenGL program index
-        int texture_counter; // Internal counter for keeping track of uniform_texture calls
 };
 
 #endif // SHADERS_H_

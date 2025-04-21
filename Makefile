@@ -3,7 +3,7 @@ CSTD=-std=c++17
 WARN=-Wall -Wextra -Wpedantic -Werror
 SOURCE=src/*.cpp src/*/*.cpp
 INCLUDE=-Iinclude
-LINKGL=-lglfw -lGL -lX11 -lpthread -lXrandr -lXi -ldl
+LINKGL=-lglfw -lGL -lX11 -lpthread -lXrandr -lXi -ldl -lassimp
 OUTPUT=playgroundgl
 DEBUG=-g3 -O0
 RELEASE=-g -O3

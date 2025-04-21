@@ -89,6 +89,7 @@ Box::Box(glm::vec3 position, float angle) :
 
 Box::~Box()
 {
+    std::cout << "NOTE: deleting box, VAO " << array_obj << std::endl;
     glDeleteVertexArrays(1, &array_obj);
     glDeleteBuffers(1, &ibuf);
     glDeleteBuffers(1, &vbuf);

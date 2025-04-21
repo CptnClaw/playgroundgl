@@ -1,0 +1,42 @@
+#ifndef MESH_H_
+#define MESH_H_
+
+#include <vector>
+#include <glm/glm.hpp>
+#include "texture.h"
+#include "shaders.h"
+
+struct Vertex
+{
+    glm::vec3 position;
+    glm::vec3 normal;
+    glm::vec2 texture_coord;
+};
+
+struct TextureHandle
+{
+    uint id;
+    TextureType type;
+};
+
+class Mesh
+{
+public:
+    Mesh(const std::vector<Vertex> &vertices, 
+        const std::vector<uint> &indices,
+        const std::vector<TextureHandle> &textures); 
+    ~Mesh();
+    void draw(const Shaders &program) const;
+
+private:
+    // OpenGL stuff
+    uint vbuf; // Index of vertices buffer on GPU
+    uint ibuf; // Index of indices buffer on GPU
+    uint array_obj; // Index of array object on GPU
+
+    // Mesh data
+    size_t num_indices;
+    std::vector<TextureHandle> textures;
+};
+
+#endif // MESH_H_

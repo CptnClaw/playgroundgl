@@ -4,7 +4,8 @@
 #include "stb_image.h"
 #include "texture.h" 
 
-Texture::Texture(const std::string &texture_path, bool has_alpha_channel)
+Texture::Texture(const std::string &texture_path, bool has_alpha_channel, TextureType type) : 
+    filepath(texture_path), type(type)
 {
     // Prepare OpenGL texture
     glGenTextures(1, &id);
@@ -16,6 +17,7 @@ Texture::Texture(const std::string &texture_path, bool has_alpha_channel)
 
     // Read image file
     int texwidth, texheight, texchannels;
+    stbi_set_flip_vertically_on_load(true);
     unsigned char *texdata = stbi_load(texture_path.c_str(), &texwidth, &texheight, &texchannels, 0);
     GLenum format = GL_RGB;
     if (has_alpha_channel)
@@ -39,6 +41,7 @@ Texture::Texture(const std::string &texture_path, bool has_alpha_channel)
 
 Texture::~Texture()
 {
+    std::cout << "NOTE: deleteing texture " << id << std::endl;
     glDeleteTextures(1, &id);
 }
 

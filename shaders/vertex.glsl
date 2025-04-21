@@ -20,7 +20,7 @@ void main()
     // For texturing
     vertex_texture = texcoord;
     // For lighting (in view space)
-    vertex_normal = mv_for_normals * normal;
+    vertex_normal = normalize(mv_for_normals * normal);
     vertex_position = (mv * vec4(position, 1.0)).xyz;
 }
 
