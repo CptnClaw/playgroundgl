@@ -23,7 +23,11 @@ Model::Model(const std::string &filepath)
         processNode(scene->mRootNode, scene);
     }
     world_transform = glm::mat4(1.f); 
-    
+    print_debug_stats(filepath);
+}
+
+void Model::print_debug_stats(const std::string &filepath)
+{
     std::cout << "Model " << filepath << " loaded successfully with ";
     int cnt_diffuse = 0;
     int cnt_specular = 0;

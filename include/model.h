@@ -22,6 +22,9 @@ public:
     void rotate(float angle, float axis_x, float axis_y, float axis_z);
     void spin(float delta_time);
 
+    // Print a message about successful loading and a count of texture types
+    void print_debug_stats(const std::string &filepath);
+
 private:
     // Holds OpenGL resources for meshes and textures
     // in a unique_ptr mostly to avoid copies and double frees
