@@ -14,75 +14,25 @@
 #include "flashlight.h"
 #include "sun.h"
 
-#define WINDOW_WIDTH 800
-#define WINDOW_HEIGHT 600
+#define WINDOW_WIDTH 1200
+#define WINDOW_HEIGHT 900
 #define PI 3.14159f
 
+using Scene = std::vector<std::unique_ptr<Model>>;
 
 
-void render(const Shaders &prog, const LightSource &lt, const Camera &camera)
+void populate_scene(Scene &models)
 {
-    prog.use();
-    glm::mat4 mvp = camera.get_projection() * camera.get_view() * lt.get_model();
-    prog.uniform_mat4("mvp", mvp);
-    lt.draw();
+    models.emplace_back(std::make_unique<Model>("resources/kokorecci/kokorecci.obj"));
+    models.back()->translate(5.f, -1.f, -1.f);
+    models.back()->rotate(PI, 0.f, 1.f, 0.f);
+
+    models.emplace_back(std::make_unique<Model>("resources/backpack/backpack.obj"));
+    models.back()->translate(-5.f, 0.f, 0.f);
+    models.back()->rotate(PI, 0.f, 1.f, 0.f);
+
+    models.emplace_back(std::make_unique<Model>("resources/cbox/cbox.obj"));
 }
-
-
-class BoxesScene
-{
-public:
-    BoxesScene() :
-        tex1("resources/crate2.png", true, TextureType::Diffuse),
-        tex2("resources/crate2_specular.png", true, TextureType::Specular)
-    {
-        // Construct boxes to render
-        float rotation = 0.f;
-        boxes.emplace_back(std::make_unique<Box>(glm::vec3(0.0f, 0.0f, 0.0f), rotation++));
-        boxes.emplace_back(std::make_unique<Box>(glm::vec3(5.0f, 5.0f, 3.0f), rotation++));
-        boxes.emplace_back(std::make_unique<Box>(glm::vec3(-1.5f, -2.2f,-2.5f), rotation++));
-        boxes.emplace_back(std::make_unique<Box>(glm::vec3(-3.8f, -2.0f, -.3f), rotation++));
-        boxes.emplace_back(std::make_unique<Box>(glm::vec3(2.4f, -0.4f, -3.5f), rotation++));
-        boxes.emplace_back(std::make_unique<Box>(glm::vec3(-1.f, 3.0f, 7.5f), rotation++));
-        boxes.emplace_back(std::make_unique<Box>(glm::vec3(1.3f, -2.0f, -2.5f), rotation++));
-        boxes.emplace_back(std::make_unique<Box>(glm::vec3(1.5f, 2.0f, -2.5f), rotation++));
-        boxes.emplace_back(std::make_unique<Box>(glm::vec3(1.5f, 0.2f, -1.5f), rotation++));
-        boxes.emplace_back(std::make_unique<Box>(glm::vec3(-1.3f, 1.0f, -1.5f), rotation++));
-    }
-    
-    void draw(float delta_time, const Shaders &program, const Camera &camera)
-    {
-        // Apply textures
-        program.use();
-        tex1.activate(0);
-        program.uniform_int("material.diffuse_map1", 0);
-        tex2.activate(1);
-        program.uniform_int("material.specular_map1", 1);
-        program.uniform_float("material.shininess", .5f);
-
-        // Render boxes
-        for (const std::unique_ptr<Box> &b : boxes) 
-        {
-            b->update(delta_time);
-            render(program, b, camera);
-        }
-    }
-    
-private:
-    std::vector<std::unique_ptr<Box>> boxes;
-    Texture tex1, tex2;
-
-    static void render(const Shaders &prog, const std::unique_ptr<Box> &box, const Camera &camera)
-    {
-        prog.use();
-        glm::mat4 mv = camera.get_view() * box->get_model();
-        glm::mat4 mvp = camera.get_projection() * mv;
-        prog.uniform_mat4("mv", mv);
-        prog.uniform_mat4("mvp", mvp);
-        prog.uniform_mat3("mv_for_normals", glm::transpose(glm::inverse(mv)));
-        box->draw();
-    }
-};
 
 int main()
 {
@@ -127,8 +77,8 @@ int main()
     Flashlight flashlight(-3.f*PI/25.f, 3.f*PI/25.f, -2.f*PI/3.f, -PI/3.f);
     
     // Load scenes
-    BoxesScene scene;
-    Model backpack_scene("resources/backpack.obj");
+    Scene scene;
+    populate_scene(scene);
 
     // Loop until the user closes the window
     Clock clock;
@@ -137,21 +87,27 @@ int main()
         // Keep time since last frame and update camera
         float delta_time = clock.tick();
         camera.update(delta_time);
+        const glm::mat4 &view_matrix = camera.get_view();
+        const glm::mat4 &proj_matrix = camera.get_projection();
         
-        // Render light source
+        // Render light source (emissive small box)
         program_light.use();
         lightsource.update(delta_time);
-        render(program_light, lightsource, camera);
+        program_light.uniform_mat4("mvp", proj_matrix * view_matrix * lightsource.get_model());
+        lightsource.draw();
 
-        // Setup lighting
+        // Setup lighting of all objects
         program.use();
-        lightsource.use(program, camera.get_view());
-        sun.use(program, camera.get_view());
+        lightsource.use(program, view_matrix);
+        sun.use(program, view_matrix);
         flashlight.use(program);
         
-        // Draw scenes
-        backpack_scene.draw(program, camera.get_view(), camera.get_projection());
-        scene.draw(delta_time, program, camera);
+        // Draw scene
+        for (std::unique_ptr<Model> &model : scene)
+        {
+            // model->spin(delta_time);
+            model->draw(program, view_matrix, proj_matrix);
+        }
     }
 
     return 0;

@@ -13,7 +13,7 @@ class Texture
 {
 public:
     // Load texture from image file
-    Texture(const std::string &texture_path, bool has_alpha_channel, TextureType type);
+    Texture(const std::string &texture_path, TextureType type);
     
     // Do not allow implicit copy due to OpenGL resource management
     Texture(const Texture&) = delete;

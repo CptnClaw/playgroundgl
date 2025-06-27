@@ -17,6 +17,11 @@ public:
     // Draw call for every mesh in the model while activating their textures
     void draw(const Shaders &program, const glm::mat4 &view, const glm::mat4 &projection) const;
 
+    // Update model matrix (world_transform)
+    void translate(float x, float y, float z);
+    void rotate(float angle, float axis_x, float axis_y, float axis_z);
+    void spin(float delta_time);
+
 private:
     // Holds OpenGL resources for meshes and textures
     // in a unique_ptr mostly to avoid copies and double frees
@@ -34,6 +39,9 @@ private:
     // i.e. if it was already loaded previously, do nothing.
     // Returns texture id.
     uint lazy_add_to_pool(const std::string &texture_path, TextureType type);
+    
+    // The directory of the object files, where the textures should be located
+    std::string directory;
 };
 
 #endif // MODEL_H_

@@ -2,8 +2,11 @@
 #include <iostream>
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
+#include <glm/gtc/matrix_transform.hpp>
 #include "mesh.h"
 #include "model.h"
+
+#define PI 3.14159f
 
 Model::Model(const std::string &filepath) 
 { 
@@ -16,9 +19,30 @@ Model::Model(const std::string &filepath)
     }
     else
     {
+        directory = filepath.substr(0, filepath.find_last_of('/') + 1);
         processNode(scene->mRootNode, scene);
     }
     world_transform = glm::mat4(1.f); 
+    
+    std::cout << "Model " << filepath << " loaded successfully with ";
+    int cnt_diffuse = 0;
+    int cnt_specular = 0;
+    for (const std::unique_ptr<Texture> &tex : texture_pool)
+    {
+        switch (tex->type)
+        {
+        case TextureType::Diffuse:
+            cnt_diffuse++;
+            break;
+        case TextureType::Specular:
+            cnt_specular++;
+            break;
+        default:
+            break;
+        }
+    }
+    std::cout << cnt_diffuse << " diffuse textures and ";
+    std::cout << cnt_specular << " specular textures" << std::endl;
 }
 
 void Model::processNode(aiNode *node, const aiScene *scene)
@@ -76,14 +100,14 @@ void Model::processMesh(aiMesh *mesh, [[maybe_unused]] const aiScene *scene)
         for (uint i = 0; i < material->GetTextureCount(aiTextureType_DIFFUSE); i++)
         {
             material->GetTexture(aiTextureType_DIFFUSE, i, &str);
-            std::string texture_path = "resources/" + std::string(str.C_Str());
+            std::string texture_path = directory + std::string(str.C_Str());
             uint texture_id = lazy_add_to_pool(texture_path, TextureType::Diffuse);
             textures.emplace_back(TextureHandle{texture_id, TextureType::Diffuse});
         }
         for (uint i = 0; i < material->GetTextureCount(aiTextureType_SPECULAR); i++)
         {
             material->GetTexture(aiTextureType_SPECULAR, i, &str);
-            std::string texture_path = "resources/" + std::string(str.C_Str());
+            std::string texture_path = directory + std::string(str.C_Str());
             uint texture_id = lazy_add_to_pool(texture_path, TextureType::Specular);
             textures.emplace_back(TextureHandle{texture_id, TextureType::Specular});
         }
@@ -106,10 +130,27 @@ uint Model::lazy_add_to_pool(const std::string &texture_path, TextureType type)
     }
     
     // Texture needs to actually load from file
-    std::unique_ptr<Texture> newtexture = std::make_unique<Texture>(texture_path, false, type);
+    std::unique_ptr<Texture> newtexture = std::make_unique<Texture>(texture_path, type);
     uint texture_id = newtexture->id;
     texture_pool.emplace_back(std::move(newtexture));
     return texture_id;
+}
+
+void Model::spin(float delta_time)
+{
+    float speed = 1.0;
+    float angle = delta_time * speed;
+    rotate(angle * -PI / 3, 1.f, 2.f, 0.f);
+}
+
+void Model::translate(float x, float y, float z)
+{
+    world_transform = glm::translate(world_transform, glm::vec3(x, y, z));
+}
+
+void Model::rotate(float angle, float axis_x, float axis_y, float axis_z)
+{
+    world_transform = glm::rotate(world_transform, angle, glm::vec3(axis_x, axis_y, axis_z));
 }
 
 void Model::draw(const Shaders &program, const glm::mat4 &view, const glm::mat4 &projection) const

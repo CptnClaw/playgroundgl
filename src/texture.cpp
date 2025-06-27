@@ -4,7 +4,7 @@
 #include "stb_image.h"
 #include "texture.h" 
 
-Texture::Texture(const std::string &texture_path, bool has_alpha_channel, TextureType type) : 
+Texture::Texture(const std::string &texture_path, TextureType type) : 
     filepath(texture_path), type(type)
 {
     // Prepare OpenGL texture
@@ -17,12 +17,23 @@ Texture::Texture(const std::string &texture_path, bool has_alpha_channel, Textur
 
     // Read image file
     int texwidth, texheight, texchannels;
-    stbi_set_flip_vertically_on_load(true);
+    stbi_set_flip_vertically_on_load(false);
     unsigned char *texdata = stbi_load(texture_path.c_str(), &texwidth, &texheight, &texchannels, 0);
+
+    // Infere RGB or RGBA from number of channels
     GLenum format = GL_RGB;
-    if (has_alpha_channel)
+    switch (texchannels)
     {
+    case 3:
+        // Keep it GL_RGB
+        break;
+    case 4:
         format = GL_RGBA;
+        break;
+    default:
+        std::cout << "Error: unsupported number of channels " << texchannels;
+        std::cout << " in texture " << texture_path << std::endl;
+        break;
     }
 
     // Copy image into GPU
@@ -34,6 +45,7 @@ Texture::Texture(const std::string &texture_path, bool has_alpha_channel, Textur
     else
     {
         std::cout << "Failed to load texture" << std::endl;
+        std::cout << texture_path << std::endl;
     }
     
     stbi_image_free(texdata);
