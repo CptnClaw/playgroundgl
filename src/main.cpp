@@ -13,6 +13,7 @@
 #include "lightsource.h"
 #include "flashlight.h"
 #include "sun.h"
+#include "ground.h"
 
 #define WINDOW_WIDTH 1200
 #define WINDOW_HEIGHT 900
@@ -23,15 +24,26 @@ using Scene = std::vector<std::unique_ptr<Model>>;
 
 void populate_scene(Scene &models)
 {
-    models.emplace_back(std::make_unique<Model>("resources/kokorecci/kokorecci.obj"));
-    models.back()->translate(5.f, -1.f, -1.f);
-    models.back()->rotate(PI, 0.f, 1.f, 0.f);
-
     models.emplace_back(std::make_unique<Model>("resources/backpack/backpack.obj"));
-    models.back()->translate(-5.f, 0.f, 0.f);
-    models.back()->rotate(PI, 0.f, 1.f, 0.f);
+    models.back()->translate(-3.f, -.3f, 1.f);
+    models.back()->rotate(PI * 7.f/10.f, 0.f, 1.f, 0.f);
+    models.back()->scale(0.4);
 
     models.emplace_back(std::make_unique<Model>("resources/cbox/cbox.obj"));
+    models.back()->translate(0.f, -.5f, 1.f);
+    models.back()->scale(0.5);
+    models.emplace_back(std::make_unique<Model>("resources/cbox/cbox.obj"));
+    models.back()->translate(1.f, -.5f, 1.f);
+    models.back()->scale(0.5);
+    models.emplace_back(std::make_unique<Model>("resources/cbox/cbox.obj"));
+    models.back()->translate(1.f, .5f, 1.f);
+    models.back()->scale(0.5);
+    models.emplace_back(std::make_unique<Model>("resources/cbox/cbox.obj"));
+    models.back()->translate(1.f, -.5f, 0.f);
+    models.back()->scale(0.5);
+    
+    models.emplace_back(std::make_unique<Model>("resources/playground/KIDS_PLAYGROUND.obj"));
+    models.back()->translate(4.f, -1.f, 7.f);
 }
 
 int main()
@@ -66,11 +78,11 @@ int main()
 
     // Construct light sources to render
     // Point light
-    LightSource lightsource(glm::vec3(0.f, 2.f, -4.f), glm::vec3(1.f, 1.f, 1.f));
+    LightSource lightsource(glm::vec3(6.f, 0.f, 0.f), glm::vec3(1.f, 1.f, 1.f));
     program_light.use();
     program_light.uniform_vec3("color", lightsource.get_color());
     program.use();
-    program.uniform_float("ambient_light_intensity", .1f);
+    program.uniform_float("ambient_light_intensity", .2f);
     // Sunlight
     Sun sun(glm::vec3(0.f, -1.f, 0.f));
     // Flashlight
@@ -79,6 +91,9 @@ int main()
     // Load scenes
     Scene scene;
     populate_scene(scene);
+    Ground ground(-1.f, 100,
+        std::make_unique<Texture>("resources/ground.jpg", TextureType::Diffuse), 
+        std::make_unique<Texture>("resources/blanki.png", TextureType::Specular));
 
     // Loop until the user closes the window
     Clock clock;
@@ -103,6 +118,7 @@ int main()
         flashlight.use(program);
         
         // Draw scene
+        ground.draw(program, view_matrix, proj_matrix);
         for (std::unique_ptr<Model> &model : scene)
         {
             // model->spin(delta_time);

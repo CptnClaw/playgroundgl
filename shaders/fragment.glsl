@@ -50,8 +50,8 @@ vec3 CalcSpecular(vec3 light_direction, vec3 target, vec3 target_normal)
 float CalcAttenuation(float distance, float strength)
 {
     // Attenuation decreases quadratically as a function of distance
-    float linear_term = mix(0.22, 0.027, strength);
-    float quadratic_term = mix(0.2, 0.0028, strength);
+    float linear_term = mix(0.22, 0.0027, strength);
+    float quadratic_term = mix(0.2, 0.00028, strength);
     return 1.0 / (1 + linear_term * distance + quadratic_term * distance * distance);
 }
 

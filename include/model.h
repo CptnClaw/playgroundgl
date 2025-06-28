@@ -20,6 +20,7 @@ public:
     // Update model matrix (world_transform)
     void translate(float x, float y, float z);
     void rotate(float angle, float axis_x, float axis_y, float axis_z);
+    void scale(float amount);
     void spin(float delta_time);
 
     // Print a message about successful loading and a count of texture types

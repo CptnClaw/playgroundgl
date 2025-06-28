@@ -152,6 +152,11 @@ void Model::translate(float x, float y, float z)
     world_transform = glm::translate(world_transform, glm::vec3(x, y, z));
 }
 
+void Model::scale(float amount)
+{
+    world_transform = glm::scale(world_transform, glm::vec3(amount));
+}
+
 void Model::rotate(float angle, float axis_x, float axis_y, float axis_z)
 {
     world_transform = glm::rotate(world_transform, angle, glm::vec3(axis_x, axis_y, axis_z));

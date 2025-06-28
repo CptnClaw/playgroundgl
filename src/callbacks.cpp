@@ -22,13 +22,13 @@ bool is_sun = true;
 int move_x = 0, move_y = 0;
 float rot_speed = 0.f;
 float delta = .1f;
-float light_strength = 0.5f;
+float light_strength = 0.8f;
 
 bool mouse_entered_focus = true;
 double last_mouse_x, last_mouse_y;
 float camera_pitch = 0.f, camera_yaw = PI / 2.f;
 float flashlight_pitch = 0.f, flashlight_yaw = -PI / 2.f;
-float mouse_sensitivity = .005f;
+float mouse_sensitivity = .008f;
 float zoom = 1;
 float scroll_sensitivity = 0.1f;
 
