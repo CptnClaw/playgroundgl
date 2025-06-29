@@ -42,26 +42,29 @@ Mesh::~Mesh()
     glDeleteBuffers(1, &vbuf);
 }
 
-void Mesh::draw(const Shaders &program) const
+void Mesh::draw(const Shaders &program, bool with_textures) const
 {
     // Activate and bind textures
-    int diffuse_index = 0;
-    int specular_index = 0;
-    for (const TextureHandle &t : textures)
+    if (with_textures)
     {
-        int unit_id = diffuse_index + specular_index + 5;
-        glActiveTexture(GL_TEXTURE0 + unit_id);
-        glBindTexture(GL_TEXTURE_2D, t.id);
-        if (t.type == TextureType::Diffuse)
+        int diffuse_index = 0;
+        int specular_index = 0;
+        for (const TextureHandle &t : textures)
         {
-            program.uniform_int("material.diffuse_map" + std::to_string(++diffuse_index), unit_id);
+            int unit_id = diffuse_index + specular_index + 5;
+            glActiveTexture(GL_TEXTURE0 + unit_id);
+            glBindTexture(GL_TEXTURE_2D, t.id);
+            if (t.type == TextureType::Diffuse)
+            {
+                program.uniform_int("material.diffuse_map" + std::to_string(++diffuse_index), unit_id);
+            }
+            else
+            {
+                program.uniform_int("material.specular_map" + std::to_string(++specular_index), unit_id);
+            }
         }
-        else
-        {
-            program.uniform_int("material.specular_map" + std::to_string(++specular_index), unit_id);
-        }
+        program.uniform_float("material.shininess", .5f);
     }
-    program.uniform_float("material.shininess", .5f);
 
     // Bind mesh and issue draw call
     glBindVertexArray(array_obj);

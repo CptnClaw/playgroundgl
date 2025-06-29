@@ -16,6 +16,7 @@ public:
 
     // Draw call for every mesh in the model while activating their textures
     void draw(const Shaders &program, const glm::mat4 &view, const glm::mat4 &projection) const;
+    void draw_with_outline(const Shaders &program, const Shaders &outline, const glm::mat4 &view, const glm::mat4 &projection) const;
 
     // Update model matrix (world_transform)
     void translate(float x, float y, float z);

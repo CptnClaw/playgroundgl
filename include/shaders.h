@@ -17,6 +17,9 @@ class Shaders
 
         // Activate program
         void use() const;
+        
+        // Send model, view, projection matrices to the program as uniforms
+        void set_transforms(const glm::mat4 &model, const glm::mat4 &view, const glm::mat4 &projection) const;
 
         // Send uniform data to shaders
         void uniform_vec3(const std::string &uniform_name, glm::vec3 v) const;

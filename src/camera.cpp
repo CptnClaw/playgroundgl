@@ -33,6 +33,7 @@ void Camera::update(float delta_time)
     position = position + 
                 direction * (MOVE_SPEED * delta_time * move_y) + 
                 camera_right * (MOVE_SPEED * delta_time * move_x);
+    position.y = position.y > -.8f ? position.y : -.8f;
     glm::vec3 camera_target = position + direction;
     view = glm::lookAt(position, camera_target, world_up);
     

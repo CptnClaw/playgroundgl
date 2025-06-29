@@ -2,6 +2,8 @@
 #include <iostream>
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
+#include <glad/gl.h>
+#include <GLFW/glfw3.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include "mesh.h"
 #include "model.h"
@@ -166,15 +168,41 @@ void Model::draw(const Shaders &program, const glm::mat4 &view, const glm::mat4 
 {
     // Set up transform uniforms
     program.use();
-    glm::mat4 mv = view * world_transform;
-    glm::mat4 mvp = projection * mv;
-    program.uniform_mat4("mv", mv);
-    program.uniform_mat4("mvp", mvp);
-    program.uniform_mat3("mv_for_normals", glm::transpose(glm::inverse(mv)));
+    program.set_transforms(world_transform, view, projection);
 
     // Draw all meshes
     for (const std::unique_ptr<Mesh> &m : meshes)
     {
-        m->draw(program);
+        m->draw(program, true);
     }
+}
+
+
+void Model::draw_with_outline(const Shaders &program, const Shaders &outline, const glm::mat4 &view, const glm::mat4 &projection) const
+{
+    // Write 1 to stencil buffer in every visible fragment
+    glStencilMask(0xFF);
+    glStencilFunc(GL_ALWAYS, 1, 0xFF);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+    
+    // Draw original model
+    draw(program, view, projection);
+    
+    // Set drawing for only where stencil buffer is 0
+    glStencilMask(0x00);
+    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+    
+    // Draw outline 
+    glm::mat4 scaled_up = glm::scale(world_transform, glm::vec3(1.05f));
+    outline.use();
+    outline.uniform_mat4("mvp", projection * view * scaled_up);
+    for (const std::unique_ptr<Mesh> &m : meshes)
+    {
+        m->draw(outline, false);
+    }
+    
+    // Restore stencil behavior 
+    glStencilMask(0xFF);
+    glStencilFunc(GL_ALWAYS, 0, 0xFF);
 }

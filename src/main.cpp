@@ -21,6 +21,8 @@
 
 using Scene = std::vector<std::unique_ptr<Model>>;
 
+extern bool show_outlines; // From callbacks.cpp
+
 
 void populate_scene(Scene &models)
 {
@@ -93,7 +95,7 @@ int main()
     populate_scene(scene);
     Ground ground(-1.f, 100,
         std::make_unique<Texture>("resources/ground.jpg", TextureType::Diffuse), 
-        std::make_unique<Texture>("resources/blanki.png", TextureType::Specular));
+        std::make_unique<Texture>("resources/blank.png", TextureType::Specular));
 
     // Loop until the user closes the window
     Clock clock;
@@ -119,10 +121,18 @@ int main()
         
         // Draw scene
         ground.draw(program, view_matrix, proj_matrix);
-        for (std::unique_ptr<Model> &model : scene)
+        int model_count = 0;
+        for (const std::unique_ptr<Model> &model : scene)
         {
-            // model->spin(delta_time);
-            model->draw(program, view_matrix, proj_matrix);
+            if (show_outlines && model_count >= 1 && model_count <= 4) // Outline only boxes
+            {
+                model->draw_with_outline(program, program_light, view_matrix, proj_matrix);
+            }
+            else
+            {
+                model->draw(program, view_matrix, proj_matrix);
+            }
+            model_count++;
         }
     }
 

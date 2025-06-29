@@ -26,7 +26,7 @@ public:
         const std::vector<uint> &indices,
         const std::vector<TextureHandle> &textures); 
     ~Mesh();
-    void draw(const Shaders &program) const;
+    void draw(const Shaders &program, bool with_textures) const;
 
 private:
     // OpenGL stuff

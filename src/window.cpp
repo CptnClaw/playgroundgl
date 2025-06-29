@@ -39,6 +39,8 @@ Window::Window(uint width, uint height, bool &success)
     glViewport(0, 0, width, height);
     glfwSwapInterval(1);
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_STENCIL_TEST);
+    glStencilMask(0x00); // Do not write to stencil buffer unless explicitly wanted
     
     // Set callbacks
     glfwSetKeyCallback(handle, key_callback);
@@ -77,7 +79,7 @@ bool Window::next_frame_ready() const
 
     // Clear screen
     glClearColor(0.f, 0.f, 0.f, 1.f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
     return true;
 }

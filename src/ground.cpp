@@ -64,18 +64,14 @@ void Ground::draw(const Shaders &program, const glm::mat4 &view, const glm::mat4
 {
     // Set up transform matrices
     program.use();
-    glm::mat4 mv = view * model;
-    glm::mat4 mvp = projection * mv;
-    program.uniform_mat4("mv", mv);
-    program.uniform_mat4("mvp", mvp);
-    program.uniform_mat3("mv_for_normals", glm::transpose(glm::inverse(mv)));
+    program.set_transforms(model, view, projection);
 
     // Activate and bind textures
     diffuse->activate(0);
     program.uniform_int("material.diffuse_map1", 0);
     specular->activate(1);
     program.uniform_int("material.specular_map1", 1);
-    program.uniform_float("material.shininess", .5f);
+    program.uniform_float("material.shininess", 0.01f);
 
     // Bind mesh and issue draw call
     glBindVertexArray(array_obj);

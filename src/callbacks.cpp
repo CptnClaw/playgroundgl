@@ -19,10 +19,11 @@ void modify_by_action(int action, int value, int &to_modify)
 bool is_wireframe = false;
 bool is_flashlight = false;
 bool is_sun = true;
+bool show_outlines = false;
 int move_x = 0, move_y = 0;
 float rot_speed = 0.f;
 float delta = .1f;
-float light_strength = 0.8f;
+float light_strength = 1.f;
 
 bool mouse_entered_focus = true;
 double last_mouse_x, last_mouse_y;
@@ -64,6 +65,13 @@ void key_callback(GLFWwindow *window, int key, [[maybe_unused]] int scancode, [[
         if (action == GLFW_PRESS)
         {
             is_sun = !is_sun;
+        }
+        break;
+    case GLFW_KEY_4:
+        // Toggle outline
+        if (action == GLFW_PRESS)
+        {
+            show_outlines = !show_outlines;
         }
         break;
     case GLFW_KEY_W:
