@@ -16,6 +16,11 @@ public:
 
     // Draw call for every mesh in the model while activating their textures
     void draw(const Shaders &program, const glm::mat4 &view, const glm::mat4 &projection) const;
+    
+    // Draw call for every mesh in the model without activating textures and only using mvp transformation matrix for very simple shaders
+    void draw_simple(const Shaders &program, const glm::mat4 &mvp) const;
+        
+    // Draw using a stencil trick to show outline around model
     void draw_with_outline(const Shaders &program, const Shaders &outline, const glm::mat4 &view, const glm::mat4 &projection) const;
 
     // Update model matrix (world_transform)
@@ -27,14 +32,14 @@ public:
     // Print a message about successful loading and a count of texture types
     void print_debug_stats(const std::string &filepath);
 
+    // The "Model" matrix in "Model-View-Projection" transform
+    glm::mat4 world_transform;
+
 private:
     // Holds OpenGL resources for meshes and textures
     // in a unique_ptr mostly to avoid copies and double frees
     std::vector<std::unique_ptr<Mesh>> meshes;
     std::vector<std::unique_ptr<Texture>> texture_pool;
-
-    // The "Model" matrix in "Model-View-Projection" transform
-    glm::mat4 world_transform;
     
     // Traverse the model file while populating this object
     void processNode(aiNode *node, const aiScene *scene);

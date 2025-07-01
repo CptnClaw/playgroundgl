@@ -48,6 +48,9 @@ Window::Window(uint width, uint height, bool &success)
     glfwSetCursorPosCallback(handle, mouse_callback);
     glfwSetScrollCallback(handle, scroll_callback);
     glfwSetWindowFocusCallback(handle, focus_callback);
+    glfwSetMouseButtonCallback(handle, mouse_click_callback);
+
+    glfwSetInputMode(handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     
     success = true;
 }

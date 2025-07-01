@@ -14,6 +14,7 @@
 #include "flashlight.h"
 #include "sun.h"
 #include "ground.h"
+#include "selection.h"  
 
 #define WINDOW_WIDTH 1200
 #define WINDOW_HEIGHT 900
@@ -21,8 +22,10 @@
 
 using Scene = std::vector<std::unique_ptr<Model>>;
 
-extern bool show_outlines; // From callbacks.cpp
-
+// From callbacks.cpp
+extern bool mode_selection; 
+extern bool mouse_clicked;
+extern uint click_x, click_y;
 
 void populate_scene(Scene &models)
 {
@@ -53,23 +56,16 @@ int main()
     // Open window and initialize OpenGL
     bool init_success;
     Window window(WINDOW_WIDTH, WINDOW_HEIGHT, init_success);
-    if (!init_success)
-    {
-        return -1;
-    }
+    if (!init_success)  return -1;
 
     // Build shaders programs
     bool shader_success;
     Shaders program("shaders/vertex.glsl", "shaders/fragment.glsl", shader_success);
-    if (!shader_success)
-    {
-        return -1;
-    }
+    if (!shader_success)  return -1; 
     Shaders program_light("shaders/vertex.glsl", "shaders/fragment_light.glsl", shader_success);
-    if (!shader_success)
-    {
-        return -1;
-    }
+    if (!shader_success)  return -1;
+    Shaders program_object_id("shaders/vertex.glsl", "shaders/fragment_objectid.glsl", shader_success);
+    if (!shader_success)  return -1;
 
     // Create camera
     glm::vec3 camera_position(0.f, 0.f, -10.f);
@@ -96,6 +92,11 @@ int main()
     Ground ground(-1.f, 100,
         std::make_unique<Texture>("resources/ground.jpg", TextureType::Diffuse), 
         std::make_unique<Texture>("resources/blank.png", TextureType::Specular));
+    
+    // Prepare object selection mechanism
+    Selection selection(WINDOW_WIDTH, WINDOW_HEIGHT, init_success);
+    if (!init_success)  return -1;
+    std::vector<bool> is_selected(scene.size(), false);
 
     // Loop until the user closes the window
     Clock clock;
@@ -119,20 +120,50 @@ int main()
         sun.use(program, view_matrix);
         flashlight.use(program);
         
-        // Draw scene
+        // Draw scene (non-selected objects only)
         ground.draw(program, view_matrix, proj_matrix);
-        int model_count = 0;
+        uint object_id = 0;
         for (const std::unique_ptr<Model> &model : scene)
         {
-            if (show_outlines && model_count >= 1 && model_count <= 4) // Outline only boxes
-            {
-                model->draw_with_outline(program, program_light, view_matrix, proj_matrix);
-            }
-            else
+            if (!is_selected[object_id++])
             {
                 model->draw(program, view_matrix, proj_matrix);
             }
-            model_count++;
+        }
+
+        // Draw scene (selected objects only, always on top)
+        object_id = 0;
+        for (const std::unique_ptr<Model> &model : scene)
+        {
+            if (is_selected[object_id++]) 
+            {
+                model->draw_with_outline(program, program_light, view_matrix, proj_matrix);
+            }
+        }
+                    
+        // Second render pass off-screen for object selection
+        if (mode_selection)
+        {
+            selection.start();
+            program_object_id.use();
+            uint object_id = 1; 
+            for (const std::unique_ptr<Model> &model : scene)
+            {
+                program_object_id.uniform_uint("object_id", object_id++);
+                model->draw_simple(program_object_id, proj_matrix * view_matrix * model->world_transform);
+            }
+            if (mouse_clicked)
+            {
+                uint selected_object_id = selection.object_at(click_x, WINDOW_HEIGHT - click_y);
+                if (selected_object_id > 0)
+                {
+                    is_selected[selected_object_id - 1] = !is_selected[selected_object_id - 1];
+                    std::cout << "Object at (" << click_x << "," << click_y << ") ";
+                    std::cout << "is " << selection.object_at(click_x, WINDOW_HEIGHT - click_y) << std::endl;
+                }
+                mouse_clicked = false;
+            }
+            selection.end();
         }
     }
 

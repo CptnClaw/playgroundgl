@@ -19,7 +19,6 @@ void modify_by_action(int action, int value, int &to_modify)
 bool is_wireframe = false;
 bool is_flashlight = false;
 bool is_sun = true;
-bool show_outlines = false;
 int move_x = 0, move_y = 0;
 float rot_speed = 0.f;
 float delta = .1f;
@@ -33,8 +32,14 @@ float mouse_sensitivity = .008f;
 float zoom = 1;
 float scroll_sensitivity = 0.1f;
 
+bool mode_selection = false;
+bool mouse_clicked = false;
+uint click_x = 0;
+uint click_y = 0;
+
 void key_callback(GLFWwindow *window, int key, [[maybe_unused]] int scancode, [[maybe_unused]] int action, [[maybe_unused]] int mods)
 {
+    int cursor_mode; // used only in case GLFW_KEY_4
     switch (key)
     {
     case GLFW_KEY_Q:
@@ -68,11 +73,13 @@ void key_callback(GLFWwindow *window, int key, [[maybe_unused]] int scancode, [[
         }
         break;
     case GLFW_KEY_4:
-        // Toggle outline
+        // Toggle object selection mode
         if (action == GLFW_PRESS)
         {
-            show_outlines = !show_outlines;
+            mode_selection = !mode_selection;
         }
+        cursor_mode = mode_selection ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED;
+        glfwSetInputMode(window, GLFW_CURSOR, cursor_mode);
         break;
     case GLFW_KEY_W:
         modify_by_action(action, 1, move_y);
@@ -125,7 +132,8 @@ void mouse_callback([[maybe_unused]] GLFWwindow *window, double x, double y)
 
     // Update selected pitch and yaw values according to mouse movements
     // Except for when mouse just entered focus, to avoid sudden jumps
-    if (!mouse_entered_focus)
+    // And also except for when in object selection mode
+    if (!mouse_entered_focus && !mode_selection)
     {
         *modifier_pitch += (float)(last_mouse_y - y) * mouse_sensitivity;
         *modifier_yaw += (float)(x - last_mouse_x) * mouse_sensitivity;
@@ -137,6 +145,18 @@ void mouse_callback([[maybe_unused]] GLFWwindow *window, double x, double y)
     last_mouse_y = y;
 }
 
+void mouse_click_callback(GLFWwindow *window, int button, int action, [[maybe_unused]] int mods)
+{
+    double x, y;
+    if (mode_selection && button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+    {
+        glfwGetCursorPos(window, &x, &y);
+        mouse_clicked = true;
+        click_x = static_cast<uint>(x);
+        click_y = static_cast<uint>(y);
+    }
+}
+
 void scroll_callback([[maybe_unused]] GLFWwindow *window, [[maybe_unused]] double xoffset, double yoffset)
 {
     zoom -= yoffset * scroll_sensitivity;
@@ -146,12 +166,6 @@ void focus_callback([[maybe_unused]] GLFWwindow *window, int focused)
 {
     if (focused)
     {
-        // Lock mouse only after one window defocusing event.
-        // Workaround for a hyprland/wayland bug?
-        if (!mouse_entered_focus) 
-        {
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        }
         mouse_entered_focus = true;
     }
     else

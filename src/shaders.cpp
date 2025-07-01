@@ -79,6 +79,16 @@ void Shaders::uniform_int(const std::string &uniform_name, int i) const
     glUniform1i(unif_loc, i);
 }
 
+void Shaders::uniform_uint(const std::string &uniform_name, uint u) const
+{
+    int unif_loc = glGetUniformLocation(id, uniform_name.c_str());
+    if (unif_loc == -1)
+    {
+        std::cout << "Error: Cannot set uniform " << uniform_name << "" << std::endl;
+    }
+    glUniform1ui(unif_loc, u);
+}
+
 void Shaders::use() const
 {
     glUseProgram(id);

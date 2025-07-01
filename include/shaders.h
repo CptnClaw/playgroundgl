@@ -29,6 +29,7 @@ class Shaders
         void uniform_float(const std::string &uniform_name, float f) const;
         void uniform_modulation(const std::string &uniform_name) const;
         void uniform_int(const std::string &uniform_name, int i) const;
+        void uniform_uint(const std::string &uniform_name, uint u) const;
 
     private:
         int id; // OpenGL program index

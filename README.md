@@ -7,3 +7,9 @@ Playground for learning OpenGL
 - GLAD
 - GLM
 - assimp
+
+## Keyboard toggles
+- 1: Wireframe mode.
+- 2: Flashlight.
+- 3: Sun.
+- 4: Object selection mode.
