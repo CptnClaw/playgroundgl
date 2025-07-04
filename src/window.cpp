@@ -41,6 +41,7 @@ Window::Window(uint width, uint height, bool &success)
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_STENCIL_TEST);
     glStencilMask(0x00); // Do not write to stencil buffer unless explicitly wanted
+    glEnable(GL_CULL_FACE);
     
     // Set callbacks
     glfwSetKeyCallback(handle, key_callback);

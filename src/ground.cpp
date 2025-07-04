@@ -18,7 +18,7 @@ Ground::Ground(float height, float scale, std::unique_ptr<Texture> diffuse, std:
     };
     size_t stride = 8; // number of columns above
     uint indices[] = {
-        0, 1, 2, 1, 2, 3, // back
+        1, 0, 2, 1, 2, 3, // back
     };
 
     // Create buffers on GPU

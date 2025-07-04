@@ -6,7 +6,6 @@
 #include "model.h"
 #include "shaders.h"
 #include "texture.h"
-#include "box.h"
 #include "clock.h"
 #include "window.h"
 #include "camera.h"
@@ -78,7 +77,7 @@ int main()
     // Point light
     LightSource lightsource(glm::vec3(6.f, 0.f, 0.f), glm::vec3(1.f, 1.f, 1.f));
     program_light.use();
-    program_light.uniform_vec3("color", lightsource.get_color());
+    program_light.uniform_vec3("color", lightsource.color);
     program.use();
     program.uniform_float("ambient_light_intensity", .2f);
     // Sunlight
@@ -111,7 +110,7 @@ int main()
         // Render light source (emissive small box)
         program_light.use();
         lightsource.update(delta_time);
-        program_light.uniform_mat4("mvp", proj_matrix * view_matrix * lightsource.get_model());
+        program_light.uniform_mat4("mvp", proj_matrix * view_matrix * lightsource.model);
         lightsource.draw();
 
         // Setup lighting of all objects
