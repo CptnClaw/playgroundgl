@@ -9,19 +9,31 @@ class LightSource
 {
 public:
     LightSource(glm::vec3 position, glm::vec3 color);
+
+    // Do not allow implicit copy due to OpenGL resource management
+    LightSource(const LightSource&) = delete;
+    LightSource& operator=(const LightSource&) = delete;
+
+    // Free OpenGL resources
     ~LightSource();
-    glm::vec3 get_color() const;
-    glm::vec3 get_position(const glm::mat4 &view) const; // Gets position in view space
+
+    // Returns current position in view space
+    glm::vec3 get_position(const glm::mat4 &view) const; 
+
+    // Spin around starting position
     void update(float delta_time);
+
+    // Send transformations to shader
     void use(const Shaders &program, const glm::mat4 &view) const;
+    
+    // Draw call
     void draw() const;
 
+    // Members
     glm::vec3 starting_position; // Position when constructing (at spin zero)
     glm::vec3 color; // Color of light
     float spin; // Speed of spinning around origin
-
-    // World matrix parameter
-    glm::mat4 model;
+    glm::mat4 model; // World matrix
 
 private:
     // OpenGL stuff

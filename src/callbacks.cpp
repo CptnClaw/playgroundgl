@@ -37,6 +37,8 @@ bool mouse_clicked = false;
 uint click_x = 0;
 uint click_y = 0;
 
+uint cur_skybox = 0;
+
 void key_callback(GLFWwindow *window, int key, [[maybe_unused]] int scancode, [[maybe_unused]] int action, [[maybe_unused]] int mods)
 {
     int cursor_mode; // used only in case GLFW_KEY_4
@@ -106,6 +108,12 @@ void key_callback(GLFWwindow *window, int key, [[maybe_unused]] int scancode, [[
     case GLFW_KEY_J:
         light_strength -= delta;
         if (light_strength < 0.0f) light_strength = 0.0f;
+        break;
+    case GLFW_KEY_B:
+        if (action == GLFW_PRESS)
+        {
+            cur_skybox++;
+        }
         break;
     default:
         break;

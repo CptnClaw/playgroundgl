@@ -1,5 +1,6 @@
 #include <iostream>
 #include <memory>
+#include <filesystem>
 
 #include <glad/gl.h>
 
@@ -14,17 +15,20 @@
 #include "sun.h"
 #include "ground.h"
 #include "selection.h"  
+#include "skybox.h"
 
 #define WINDOW_WIDTH 1200
 #define WINDOW_HEIGHT 900
 #define PI 3.14159f
 
+namespace fs = std::filesystem;
 using Scene = std::vector<std::unique_ptr<Model>>;
 
 // From callbacks.cpp
 extern bool mode_selection; 
 extern bool mouse_clicked;
 extern uint click_x, click_y;
+extern uint cur_skybox;
 
 void populate_scene(Scene &models)
 {
@@ -65,6 +69,8 @@ int main()
     if (!shader_success)  return -1;
     Shaders program_object_id("shaders/vertex.glsl", "shaders/fragment_objectid.glsl", shader_success);
     if (!shader_success)  return -1;
+    Shaders program_skybox("shaders/vertex_skybox.glsl", "shaders/fragment_skybox.glsl", shader_success);
+    if (!shader_success)  return -1;
 
     // Create camera
     glm::vec3 camera_position(0.f, 0.f, -10.f);
@@ -88,9 +94,15 @@ int main()
     // Load scenes
     Scene scene;
     populate_scene(scene);
-    Ground ground(-1.f, 100,
+    Ground ground(-1.f, 15,
         std::make_unique<Texture>("resources/ground.jpg", TextureType::Diffuse), 
         std::make_unique<Texture>("resources/blank.png", TextureType::Specular));
+    std::vector<std::unique_ptr<Skybox>> skies;
+    for (const fs::directory_entry &entry : fs::directory_iterator("resources/skyboxes"))
+    {
+        std::string textures = entry.path().string();
+        skies.emplace_back(std::make_unique<Skybox>(textures));
+    }
     
     // Prepare object selection mechanism
     Selection selection(WINDOW_WIDTH, WINDOW_HEIGHT, init_success);
@@ -118,6 +130,11 @@ int main()
         lightsource.use(program, view_matrix);
         sun.use(program, view_matrix);
         flashlight.use(program);
+        
+        // Draw skybox
+        program_skybox.use();
+        cur_skybox = cur_skybox % skies.size();
+        skies[cur_skybox]->draw(program_skybox, view_matrix, proj_matrix);
         
         // Draw scene (non-selected objects only)
         ground.draw(program, view_matrix, proj_matrix);
