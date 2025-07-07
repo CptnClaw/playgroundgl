@@ -9,7 +9,7 @@ Playground for learning OpenGL
 - assimp
 
 ## Keyboard actions
-- 1: Cycle rendering mode (default, wireframe, envmap reflection, envmap refraction)
+- 1: Cycle rendering mode (default, wireframe, depth buffer, envmap reflection, envmap refraction)
 - 2: Toggle flashlight.
 - 3: Toggle sun.
 - 4: Toggle object selection mode.

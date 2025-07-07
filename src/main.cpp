@@ -31,7 +31,7 @@ extern bool mode_selection;
 extern bool mouse_clicked;
 extern uint click_x, click_y;
 
-Zm render_mode(4); // 0 - Full, 1 - Wireframe, 2 - EnvMap Reflect, 3 - EnvMap Refract
+Zm render_mode(5); // 0 - Full, 1 - Wireframe, 2 - Depth, 3 - EnvMap Reflect, 4 - EnvMap Refract
 std::unique_ptr<Zm> cur_skybox; // Determine m (number of skyboxes) on runtime
 
 void populate_scene(Scene &models)
@@ -88,6 +88,8 @@ int main()
     Shaders program_em_reflect("shaders/vertex.glsl", "shaders/fragment_em_reflect.glsl", shader_success);
     if (!shader_success)  return -1;
     Shaders program_em_refract("shaders/vertex.glsl", "shaders/fragment_em_refract.glsl", shader_success);
+    if (!shader_success)  return -1;
+    Shaders program_depth("shaders/vertex.glsl", "shaders/fragment_depth.glsl", shader_success);
     if (!shader_success)  return -1;
 
     // Create camera
@@ -156,9 +158,12 @@ int main()
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             break;
         case 2:
-            cur_program = &program_em_reflect;
+            cur_program = &program_depth;
             break;
         case 3:
+            cur_program = &program_em_reflect;
+            break;
+        case 4:
             cur_program = &program_em_refract;
             break;
         default:
@@ -177,8 +182,8 @@ int main()
         sun.use(*cur_program);
         flashlight.use(*cur_program, view_matrix);
         
-        // Draw ground (in default mode and wireframe mode only)
-        if (render_mode.value <= 1) 
+        // Draw ground (in default, wireframe, depth modes only)
+        if (render_mode.value <= 2) 
         {
             set_transforms(*cur_program, camera, ground.model_transform);
             ground.draw(*cur_program);
