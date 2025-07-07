@@ -25,7 +25,15 @@ public:
     Mesh(const std::vector<Vertex> &vertices, 
         const std::vector<uint> &indices,
         const std::vector<TextureHandle> &textures); 
+
+    // Do not allow implicit copy due to OpenGL resource management
+    Mesh(const Mesh&) = delete;
+    Mesh& operator=(const Mesh&) = delete;
+
+    // Free resources
     ~Mesh();
+
+    // Issue draw call
     void draw(const Shaders &program, bool with_textures) const;
 
 private:
