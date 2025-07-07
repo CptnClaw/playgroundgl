@@ -47,9 +47,9 @@ Ground::Ground(float height, float scale, std::unique_ptr<Texture> diffuse, std:
 
     // Start with the identity matrix
     // Set starting position in world space
-    model = glm::mat4(1.f); 
-    model = glm::translate(model, glm::vec3(0.f, height, 0.f));
-    model = glm::scale(model, glm::vec3(scale));
+    model_transform = glm::mat4(1.f); 
+    model_transform = glm::translate(model_transform, glm::vec3(0.f, height, 0.f));
+    model_transform = glm::scale(model_transform, glm::vec3(scale));
 }
 
 Ground::~Ground()
@@ -60,11 +60,9 @@ Ground::~Ground()
     glDeleteBuffers(1, &vbuf);
 }
 
-void Ground::draw(const Shaders &program, const glm::mat4 &view, const glm::mat4 &projection) const
+void Ground::draw(const Shaders &program) const 
 {
-    // Set up transform matrices
     program.use();
-    program.set_transforms(model, view, projection);
 
     // Activate and bind textures
     diffuse->activate(0);

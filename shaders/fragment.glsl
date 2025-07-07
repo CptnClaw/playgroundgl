@@ -22,9 +22,11 @@ struct LightSource
 };
 
 in vec2 vertex_texture;
-in vec3 vertex_normal; // in view space
-in vec3 vertex_position; // in view space
+in vec3 vertex_normal; // in world space
+in vec3 vertex_position; // in world space
 
+
+uniform vec3 camera_position;
 uniform float ambient_light_intensity; 
 uniform LightSource light;
 uniform LightSource sun;
@@ -42,7 +44,7 @@ vec3 CalcDiffuse(vec3 light_direction, vec3 target_normal)
 vec3 CalcSpecular(vec3 light_direction, vec3 target, vec3 target_normal)
 {
     vec3 reflected_light_direction = reflect(-light_direction, target_normal);
-    vec3 camera_direction = normalize(-target); // Camera is in origin (view space)
+    vec3 camera_direction = normalize(camera_position - target); 
     float specular_geometric_term = clamp(dot(camera_direction, reflected_light_direction), 0.0, 1.0);
     return vec3(pow(specular_geometric_term, material.shininess * 128.0));
 }
@@ -50,8 +52,8 @@ vec3 CalcSpecular(vec3 light_direction, vec3 target, vec3 target_normal)
 float CalcAttenuation(float distance, float strength)
 {
     // Attenuation decreases quadratically as a function of distance
-    float linear_term = mix(0.22, 0.0027, strength);
-    float quadratic_term = mix(0.2, 0.00028, strength);
+    float linear_term = mix(0.1, 0.0027, strength);
+    float quadratic_term = mix(0.1, 0.00028, strength);
     return 1.0 / (1 + linear_term * distance + quadratic_term * distance * distance);
 }
 
@@ -76,8 +78,8 @@ vec3 CalcFlashlight(LightSource source, vec3 target, vec3 diffuse_color)
 {
     // Calculate light in a small disk in front of camera, with a smooth falloff around edges
     // Light is flat, without specular component
-    vec3 camera_direction = normalize(-target); // Camera is in origin (view space)
-    vec3 flashlight_direction = normalize(-source.direction);
+    vec3 camera_direction = normalize(camera_position - target); 
+    vec3 flashlight_direction = normalize(camera_position - source.direction);
     float cosine_similarity = dot(camera_direction, flashlight_direction);
     float flashlight_intensity = pow(clamp(cosine_similarity + 0.01, 0.0, 1.0), 100); // Light up a disk with fast decaying edgea
 

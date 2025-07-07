@@ -164,52 +164,39 @@ void Model::rotate(float angle, float axis_x, float axis_y, float axis_z)
     world_transform = glm::rotate(world_transform, angle, glm::vec3(axis_x, axis_y, axis_z));
 }
 
-void Model::draw(const Shaders &program, const glm::mat4 &view, const glm::mat4 &projection) const
+void Model::draw(const Shaders &program, bool with_textures) const
 {
     // Set up transform uniforms
     program.use();
-    program.set_transforms(world_transform, view, projection);
 
     // Draw all meshes
     for (const std::unique_ptr<Mesh> &m : meshes)
     {
-        m->draw(program, true);
-    }
-}
-
-void Model::draw_simple(const Shaders &program, const glm::mat4 &mvp) const
-{
-    // Set up transform uniforms
-    program.use();
-    program.uniform_mat4("mvp", mvp);
-
-    // Draw all meshes
-    for (const std::unique_ptr<Mesh> &m : meshes)
-    {
-        m->draw(program, false);
+        m->draw(program, with_textures);
     }
 }
 
 
-void Model::draw_with_outline(const Shaders &program, const Shaders &outline, const glm::mat4 &view, const glm::mat4 &projection) const
+void Model::draw_with_outline(const Shaders &program, const Shaders &outline) const
 {
     // Write 1 to stencil buffer in every visible fragment
+    program.use();
     glStencilMask(0xFF);
     glStencilFunc(GL_ALWAYS, 1, 0xFF);
     glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
     
     // Draw original model
-    draw(program, view, projection);
+    draw(program, true);
     
     // Set drawing for only where stencil buffer is 0
+    outline.use();
     glStencilMask(0x00);
     glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
     glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
     glDisable(GL_DEPTH_TEST);
     
     // Draw outline 
-    glm::mat4 scaled_up = glm::scale(world_transform, glm::vec3(1.05f));
-    draw_simple(outline, projection * view * scaled_up);
+    draw(outline, false);
     
     // Restore stencil behavior 
     glStencilMask(0xFF);

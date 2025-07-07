@@ -97,11 +97,10 @@ void Shaders::use() const
 void Shaders::set_transforms(const glm::mat4 &model, const glm::mat4 &view, const glm::mat4 &projection) const
 {
     use();
-    glm::mat4 mv = view * model;
-    glm::mat4 mvp = projection * mv;
-    uniform_mat4("mv", mv);
+    glm::mat4 mvp = projection * view * model;
+    uniform_mat4("m", model);
     uniform_mat4("mvp", mvp);
-    uniform_mat3("mv_for_normals", glm::transpose(glm::inverse(mv)));
+    uniform_mat3("m_for_normals", glm::transpose(glm::inverse(model)));
 }
 
 Shaders::~Shaders()

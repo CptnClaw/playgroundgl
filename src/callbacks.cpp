@@ -21,7 +21,7 @@ bool is_flashlight = false;
 bool is_sun = true;
 int move_x = 0, move_y = 0;
 float rot_speed = 0.f;
-float delta = .1f;
+float delta = .01f;
 float light_strength = 1.f;
 
 bool mouse_entered_focus = true;

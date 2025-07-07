@@ -3,6 +3,7 @@
 #include <filesystem>
 
 #include <glad/gl.h>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "model.h"
 #include "shaders.h"
@@ -54,6 +55,16 @@ void populate_scene(Scene &models)
     models.back()->translate(4.f, -1.f, 7.f);
 }
 
+void set_transforms(const Shaders &program, const Camera &camera, const glm::mat4 &model_transform)
+{
+    glm::mat4 mvp = camera.get_projection() * camera.get_view() * model_transform;
+    program.use();
+    program.uniform_mat4("m", model_transform);
+    program.uniform_mat4("mvp", mvp);
+    program.uniform_mat3("m_for_normals", glm::transpose(glm::inverse(model_transform)));
+    program.uniform_vec3("camera_position", camera.position);
+}
+
 int main()
 {
     // Open window and initialize OpenGL
@@ -71,6 +82,8 @@ int main()
     if (!shader_success)  return -1;
     Shaders program_skybox("shaders/vertex_skybox.glsl", "shaders/fragment_skybox.glsl", shader_success);
     if (!shader_success)  return -1;
+    Shaders program_em_reflect("shaders/vertex.glsl", "shaders/fragment_em_reflect.glsl", shader_success);
+    if (!shader_success)  return -1;
 
     // Create camera
     glm::vec3 camera_position(0.f, 0.f, -10.f);
@@ -81,7 +94,7 @@ int main()
 
     // Construct light sources to render
     // Point light
-    LightSource lightsource(glm::vec3(6.f, 0.f, 0.f), glm::vec3(1.f, 1.f, 1.f));
+    LightSource lightsource(glm::vec3(0.f, 0.f, -6.f), glm::vec3(1.f, 1.f, 1.f));
     program_light.use();
     program_light.uniform_vec3("color", lightsource.color);
     program.use();
@@ -118,17 +131,16 @@ int main()
         camera.update(delta_time);
         const glm::mat4 &view_matrix = camera.get_view();
         const glm::mat4 &proj_matrix = camera.get_projection();
-        
+
         // Render light source (emissive small box)
-        program_light.use();
         lightsource.update(delta_time);
-        program_light.uniform_mat4("mvp", proj_matrix * view_matrix * lightsource.model);
+        set_transforms(program_light, camera, lightsource.model);
         lightsource.draw();
 
         // Setup lighting of all objects
         program.use();
-        lightsource.use(program, view_matrix);
-        sun.use(program, view_matrix);
+        lightsource.use(program);
+        sun.use(program);
         flashlight.use(program);
         
         // Draw skybox
@@ -137,13 +149,15 @@ int main()
         skies[cur_skybox]->draw(program_skybox, view_matrix, proj_matrix);
         
         // Draw scene (non-selected objects only)
-        ground.draw(program, view_matrix, proj_matrix);
+        set_transforms(program, camera, ground.model_transform);
+        ground.draw(program);
         uint object_id = 0;
         for (const std::unique_ptr<Model> &model : scene)
         {
             if (!is_selected[object_id++])
             {
-                model->draw(program, view_matrix, proj_matrix);
+                set_transforms(program, camera, model->world_transform);
+                model->draw(program, true);
             }
         }
 
@@ -153,7 +167,9 @@ int main()
         {
             if (is_selected[object_id++]) 
             {
-                model->draw_with_outline(program, program_light, view_matrix, proj_matrix);
+                set_transforms(program, camera, model->world_transform);
+                set_transforms(program_light, camera, glm::scale(model->world_transform, glm::vec3(1.1f)));
+                model->draw_with_outline(program, program_light);
             }
         }
                     
@@ -166,7 +182,8 @@ int main()
             for (const std::unique_ptr<Model> &model : scene)
             {
                 program_object_id.uniform_uint("object_id", object_id++);
-                model->draw_simple(program_object_id, proj_matrix * view_matrix * model->world_transform);
+                set_transforms(program_object_id, camera, model->world_transform);
+                model->draw(program_object_id, false);
             }
             if (mouse_clicked)
             {

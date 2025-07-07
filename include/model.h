@@ -15,13 +15,10 @@ public:
     Model(const std::string &filepath);
 
     // Draw call for every mesh in the model while activating their textures
-    void draw(const Shaders &program, const glm::mat4 &view, const glm::mat4 &projection) const;
-    
-    // Draw call for every mesh in the model without activating textures and only using mvp transformation matrix for very simple shaders
-    void draw_simple(const Shaders &program, const glm::mat4 &mvp) const;
+    void draw(const Shaders &program, bool with_textures) const;
         
     // Draw using a stencil trick to show outline around model
-    void draw_with_outline(const Shaders &program, const Shaders &outline, const glm::mat4 &view, const glm::mat4 &projection) const;
+    void draw_with_outline(const Shaders &program, const Shaders &outline) const;
 
     // Update model matrix (world_transform)
     void translate(float x, float y, float z);

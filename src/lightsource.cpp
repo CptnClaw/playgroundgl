@@ -8,7 +8,9 @@
 #define PI 3.14159f
 extern float light_strength;
 
-LightSource::LightSource(glm::vec3 position, glm::vec3 color) : starting_position(position), color(color), spin(1.f) 
+glm::vec4 origin = glm::vec4(glm::vec3(0.f,0.f,0.f), 1.f);
+
+LightSource::LightSource(glm::vec3 position, glm::vec3 color) : color(color), spin(1.f) 
 {
     float vertices[] = {
         // 2D position  // (dummy) Normal  // (dummy) texture coords
@@ -39,7 +41,7 @@ LightSource::LightSource(glm::vec3 position, glm::vec3 color) : starting_positio
     
     // Generate model matrix for starting position (before spinning)
     model = glm::mat4(1.f);
-    model = glm::translate(model, starting_position);
+    model = glm::translate(model, position);
 }
 
 LightSource::~LightSource()
@@ -58,18 +60,13 @@ void LightSource::update(float delta_time)
     model = rotation_matrix * model;
 }
 
-glm::vec3 LightSource::get_position(const glm::mat4 &view) const
-{
-    return view * model * glm::vec4(starting_position, 1.f);
-}
-
-void LightSource::use(const Shaders &program, const glm::mat4 &view) const
+void LightSource::use(const Shaders &program) const
 {
     program.uniform_vec3("light.color", color);
     program.uniform_float("light.diffuse_intensity", 0.9);
     program.uniform_float("light.specular_intensity", 0.9);
     program.uniform_float("light.strength", light_strength);
-    program.uniform_vec3("light.position", get_position(view));
+    program.uniform_vec3("light.position", model * origin);
 }
 
 void LightSource::draw() const

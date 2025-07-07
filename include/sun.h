@@ -9,7 +9,7 @@ class Sun
 public:
     // Construct sun
     Sun(glm::vec3 direction);
-    void use(const Shaders &program, const glm::mat4 &view) const;
+    void use(const Shaders &program) const;
 
 private:
     glm::vec3 direction;

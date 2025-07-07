@@ -14,8 +14,10 @@ public:
     glm::mat4 get_view() const;
     glm::mat4 get_projection() const;
 
+    glm::vec3 position;
+
 private:
-    glm::vec3 position, direction, world_up;
+    glm::vec3 direction, world_up;
     float aspect_ratio;
     glm::mat4 view, projection;
 };

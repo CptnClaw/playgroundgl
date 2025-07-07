@@ -17,20 +17,16 @@ public:
     // Free OpenGL resources
     ~LightSource();
 
-    // Returns current position in view space
-    glm::vec3 get_position(const glm::mat4 &view) const; 
-
     // Spin around starting position
     void update(float delta_time);
 
     // Send transformations to shader
-    void use(const Shaders &program, const glm::mat4 &view) const;
+    void use(const Shaders &program) const;
     
     // Draw call
     void draw() const;
 
     // Members
-    glm::vec3 starting_position; // Position when constructing (at spin zero)
     glm::vec3 color; // Color of light
     float spin; // Speed of spinning around origin
     glm::mat4 model; // World matrix

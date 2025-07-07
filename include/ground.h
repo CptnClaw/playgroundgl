@@ -16,12 +16,12 @@ public:
     virtual ~Ground();
 
     // Draw ground
-    void draw(const Shaders &program, const glm::mat4 &view, const glm::mat4 &projection) const;
+    void draw(const Shaders &program) const;
 
+    // World matrix parameter
+    glm::mat4 model_transform;
 
 private:
-    // World matrix parameter
-    glm::mat4 model;
     
     // Ground textures
     std::unique_ptr<Texture> diffuse, specular;
