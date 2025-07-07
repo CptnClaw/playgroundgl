@@ -29,11 +29,12 @@ glm::vec3 Flashlight::get_direction() const
     return direc;
 }
 
-void Flashlight::use(const Shaders &program) const
+void Flashlight::use(const Shaders &program, const glm::mat4 &view) const
 {
     float is_on = 0.f;
     if (is_flashlight) is_on = 1.f;
-    program.uniform_vec3("flashlight.direction", get_direction());
+    glm::vec3 world_direction = glm::vec3(glm::inverse(view) * glm::vec4(get_direction(), 1.f));
+    program.uniform_vec3("flashlight.direction", world_direction);
     program.uniform_float("flashlight.is_on", is_on);
     program.uniform_vec3("flashlight.color", FLASHLIGHT_COLOR);
     program.uniform_float("flashlight.strength", FLASHLIGHT_STR);

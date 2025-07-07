@@ -9,7 +9,7 @@ class Flashlight
 public:
     // Construct flashlight
     Flashlight(float min_pitch, float max_pitch, float min_yaw, float max_yaw);
-    void use(const Shaders &program) const;
+    void use(const Shaders &program, const glm::mat4 &view) const;
 
 private:
     float min_pitch, max_pitch;

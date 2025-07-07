@@ -12,7 +12,7 @@ void Shaders::uniform_vec3(const std::string &uniform_name, glm::vec3 v) const
     int unif_loc = glGetUniformLocation(id, uniform_name.c_str());
     if (unif_loc == -1)
     {
-        std::cout << "Error: Cannot set uniform " << uniform_name << "" << std::endl;
+        // std::cout << "Error: Cannot set uniform " << uniform_name << "" << std::endl;
         return;
     }
     glUniform3f(unif_loc, v.x, v.y, v.z);
@@ -23,7 +23,7 @@ void Shaders::uniform_vec4(const std::string &uniform_name, glm::vec4 v) const
     int unif_loc = glGetUniformLocation(id, uniform_name.c_str());
     if (unif_loc == -1)
     {
-        std::cout << "Error: Cannot set uniform " << uniform_name << "" << std::endl;
+        // std::cout << "Error: Cannot set uniform " << uniform_name << "" << std::endl;
         return;
     }
     glUniform4f(unif_loc, v.x, v.y, v.z, v.w);
@@ -34,7 +34,7 @@ void Shaders::uniform_mat4(const std::string &uniform_name, glm::mat4 matrix) co
     int unif_loc = glGetUniformLocation(id, uniform_name.c_str());
     if (unif_loc == -1)
     {
-        std::cout << "Error: Cannot set uniform " << uniform_name << "" << std::endl;
+        // std::cout << "Error: Cannot set uniform " << uniform_name << "" << std::endl;
         return;
     }
     glUniformMatrix4fv(unif_loc, 1, GL_FALSE, glm::value_ptr(matrix));
@@ -45,7 +45,7 @@ void Shaders::uniform_mat3(const std::string &uniform_name, glm::mat3 matrix) co
     int unif_loc = glGetUniformLocation(id, uniform_name.c_str());
     if (unif_loc == -1)
     {
-        std::cout << "Error: Cannot set uniform " << uniform_name << "" << std::endl;
+        // std::cout << "Error: Cannot set uniform " << uniform_name << "" << std::endl;
         return;
     }
     glUniformMatrix3fv(unif_loc, 1, GL_FALSE, glm::value_ptr(matrix));
@@ -56,7 +56,7 @@ void Shaders::uniform_float(const std::string &uniform_name, float f) const
     int unif_loc = glGetUniformLocation(id, uniform_name.c_str());
     if (unif_loc == -1)
     {
-        std::cout << "Error: Cannot set uniform " << uniform_name << "" << std::endl;
+        // std::cout << "Error: Cannot set uniform " << uniform_name << "" << std::endl;
         return;
     }
     glUniform1f(unif_loc, f);
@@ -74,7 +74,7 @@ void Shaders::uniform_int(const std::string &uniform_name, int i) const
     int unif_loc = glGetUniformLocation(id, uniform_name.c_str());
     if (unif_loc == -1)
     {
-        std::cout << "Error: Cannot set uniform " << uniform_name << "" << std::endl;
+        // std::cout << "Error: Cannot set uniform " << uniform_name << "" << std::endl;
     }
     glUniform1i(unif_loc, i);
 }
@@ -84,7 +84,7 @@ void Shaders::uniform_uint(const std::string &uniform_name, uint u) const
     int unif_loc = glGetUniformLocation(id, uniform_name.c_str());
     if (unif_loc == -1)
     {
-        std::cout << "Error: Cannot set uniform " << uniform_name << "" << std::endl;
+        // std::cout << "Error: Cannot set uniform " << uniform_name << "" << std::endl;
     }
     glUniform1ui(unif_loc, u);
 }

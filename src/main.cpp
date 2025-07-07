@@ -102,7 +102,7 @@ int main()
     // Sunlight
     Sun sun(glm::vec3(0.f, -1.f, 0.f));
     // Flashlight
-    Flashlight flashlight(-3.f*PI/25.f, 3.f*PI/25.f, -2.f*PI/3.f, -PI/3.f);
+    Flashlight flashlight(-.1f*PI, .1f*PI, -.65f*PI, - .35f*PI);
     
     // Load scenes
     Scene scene;
@@ -141,7 +141,7 @@ int main()
         program.use();
         lightsource.use(program);
         sun.use(program);
-        flashlight.use(program);
+        flashlight.use(program, view_matrix);
         
         // Draw skybox
         program_skybox.use();
