@@ -1,6 +1,8 @@
 #include <iostream>
+#include <memory>
 #include "callbacks.h"
 #include "shaders.h"
+#include "Zm.h"
 
 #define PI 3.14159f
 
@@ -16,7 +18,6 @@ void modify_by_action(int action, int value, int &to_modify)
     // else do nothing
 }
 
-bool is_wireframe = false;
 bool is_flashlight = false;
 bool is_sun = true;
 int move_x = 0, move_y = 0;
@@ -37,7 +38,9 @@ bool mouse_clicked = false;
 uint click_x = 0;
 uint click_y = 0;
 
-uint cur_skybox = 0;
+// From main.cpp
+extern Zm render_mode;
+extern std::unique_ptr<Zm> cur_skybox;
 
 void key_callback(GLFWwindow *window, int key, [[maybe_unused]] int scancode, [[maybe_unused]] int action, [[maybe_unused]] int mods)
 {
@@ -50,12 +53,10 @@ void key_callback(GLFWwindow *window, int key, [[maybe_unused]] int scancode, [[
         glfwSetWindowShouldClose(window, GLFW_TRUE);
         break;
     case GLFW_KEY_1:
-        // Toggle wireframe
+        // Cycle through render modes
         if (action == GLFW_PRESS)
         {
-            if (is_wireframe)   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-            else                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            is_wireframe = !is_wireframe;
+            render_mode.inc();
         }
         break;
     case GLFW_KEY_2:
@@ -109,10 +110,10 @@ void key_callback(GLFWwindow *window, int key, [[maybe_unused]] int scancode, [[
         light_strength -= delta;
         if (light_strength < 0.0f) light_strength = 0.0f;
         break;
-    case GLFW_KEY_B:
+    case GLFW_KEY_5:
         if (action == GLFW_PRESS)
         {
-            cur_skybox++;
+            cur_skybox->inc();
         }
         break;
     default:

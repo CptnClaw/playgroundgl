@@ -8,8 +8,9 @@ Playground for learning OpenGL
 - GLM
 - assimp
 
-## Keyboard toggles
-- 1: Wireframe mode.
-- 2: Flashlight.
-- 3: Sun.
-- 4: Object selection mode.
+## Keyboard actions
+- 1: Cycle rendering mode (default, wireframe, environment map reflections)
+- 2: Toggle flashlight.
+- 3: Toggle sun.
+- 4: Toggle object selection mode.
+- 5: Cycle skybox.

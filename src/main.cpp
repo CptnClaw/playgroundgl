@@ -17,6 +17,7 @@
 #include "ground.h"
 #include "selection.h"  
 #include "skybox.h"
+#include "Zm.h"
 
 #define WINDOW_WIDTH 1200
 #define WINDOW_HEIGHT 900
@@ -29,7 +30,9 @@ using Scene = std::vector<std::unique_ptr<Model>>;
 extern bool mode_selection; 
 extern bool mouse_clicked;
 extern uint click_x, click_y;
-extern uint cur_skybox;
+
+Zm render_mode(3); // 0 - Full, 1 - Wireframe, 2 - EnvMap Reflect
+std::unique_ptr<Zm> cur_skybox; // Determine m (number of skyboxes) on runtime
 
 void populate_scene(Scene &models)
 {
@@ -74,7 +77,7 @@ int main()
 
     // Build shaders programs
     bool shader_success;
-    Shaders program("shaders/vertex.glsl", "shaders/fragment.glsl", shader_success);
+    Shaders program_default("shaders/vertex.glsl", "shaders/fragment.glsl", shader_success);
     if (!shader_success)  return -1; 
     Shaders program_light("shaders/vertex.glsl", "shaders/fragment_light.glsl", shader_success);
     if (!shader_success)  return -1;
@@ -97,8 +100,8 @@ int main()
     LightSource lightsource(glm::vec3(0.f, 0.f, -6.f), glm::vec3(1.f, 1.f, 1.f));
     program_light.use();
     program_light.uniform_vec3("color", lightsource.color);
-    program.use();
-    program.uniform_float("ambient_light_intensity", .2f);
+    program_default.use();
+    program_default.uniform_float("ambient_light_intensity", .2f);
     // Sunlight
     Sun sun(glm::vec3(0.f, -1.f, 0.f));
     // Flashlight
@@ -116,6 +119,7 @@ int main()
         std::string textures = entry.path().string();
         skies.emplace_back(std::make_unique<Skybox>(textures));
     }
+    cur_skybox = std::make_unique<Zm>(skies.size());
     
     // Prepare object selection mechanism
     Selection selection(WINDOW_WIDTH, WINDOW_HEIGHT, init_success);
@@ -131,6 +135,28 @@ int main()
         camera.update(delta_time);
         const glm::mat4 &view_matrix = camera.get_view();
         const glm::mat4 &proj_matrix = camera.get_projection();
+        
+        // Initialize default rendering mode
+        Shaders *cur_program = &program_default;
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+        // Draw skybox
+        program_skybox.use();
+        skies[cur_skybox->value]->draw(program_skybox, view_matrix, proj_matrix);
+
+        // Handle render modes
+        switch (render_mode.value)
+        {
+        case 1:
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            break;
+        case 2:
+            cur_program = &program_em_reflect;
+            break;
+        default:
+            std::cout << "Invalid render mode " << render_mode.value << std::endl;
+            break;
+        }
 
         // Render light source (emissive small box)
         lightsource.update(delta_time);
@@ -138,26 +164,26 @@ int main()
         lightsource.draw();
 
         // Setup lighting of all objects
-        program.use();
-        lightsource.use(program);
-        sun.use(program);
-        flashlight.use(program, view_matrix);
+        cur_program->use();
+        lightsource.use(*cur_program);
+        sun.use(*cur_program);
+        flashlight.use(*cur_program, view_matrix);
         
-        // Draw skybox
-        program_skybox.use();
-        cur_skybox = cur_skybox % skies.size();
-        skies[cur_skybox]->draw(program_skybox, view_matrix, proj_matrix);
-        
+        // Draw ground (in default mode and wireframe mode only)
+        if (render_mode.value <= 1) 
+        {
+            set_transforms(*cur_program, camera, ground.model_transform);
+            ground.draw(*cur_program);
+        }
+
         // Draw scene (non-selected objects only)
-        set_transforms(program, camera, ground.model_transform);
-        ground.draw(program);
         uint object_id = 0;
         for (const std::unique_ptr<Model> &model : scene)
         {
             if (!is_selected[object_id++])
             {
-                set_transforms(program, camera, model->world_transform);
-                model->draw(program, true);
+                set_transforms(*cur_program, camera, model->world_transform);
+                model->draw(*cur_program, true);
             }
         }
 
@@ -167,12 +193,12 @@ int main()
         {
             if (is_selected[object_id++]) 
             {
-                set_transforms(program, camera, model->world_transform);
+                set_transforms(*cur_program, camera, model->world_transform);
                 set_transforms(program_light, camera, glm::scale(model->world_transform, glm::vec3(1.1f)));
-                model->draw_with_outline(program, program_light);
+                model->draw_with_outline(*cur_program, program_light);
             }
         }
-                    
+
         // Second render pass off-screen for object selection
         if (mode_selection)
         {
