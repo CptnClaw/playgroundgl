@@ -53,7 +53,6 @@ Skybox::Skybox(std::string textures_directory) : texture(textures_directory)
 
     // Create buffers on GPU
     glGenBuffers(1, &vbuf);
-    glGenBuffers(1, &ibuf);
     glGenVertexArrays(1, &array_obj);
  
     // Copy vertices to GPU

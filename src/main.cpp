@@ -149,6 +149,9 @@ int main()
         // Handle render modes
         switch (render_mode.value)
         {
+        case 0:
+            // Already initialized above
+            break;
         case 1:
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             break;

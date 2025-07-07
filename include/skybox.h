@@ -25,7 +25,6 @@ public:
 private:
     // OpenGL stuff
     uint vbuf; // Index of vertices buffer on GPU
-    uint ibuf; // Index of indices buffer on GPU
     uint array_obj; // Index of array object on GPU
 
     CubeMap texture;
