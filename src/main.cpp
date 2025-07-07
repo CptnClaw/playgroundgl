@@ -31,7 +31,7 @@ extern bool mode_selection;
 extern bool mouse_clicked;
 extern uint click_x, click_y;
 
-Zm render_mode(3); // 0 - Full, 1 - Wireframe, 2 - EnvMap Reflect
+Zm render_mode(4); // 0 - Full, 1 - Wireframe, 2 - EnvMap Reflect, 3 - EnvMap Refract
 std::unique_ptr<Zm> cur_skybox; // Determine m (number of skyboxes) on runtime
 
 void populate_scene(Scene &models)
@@ -86,6 +86,8 @@ int main()
     Shaders program_skybox("shaders/vertex_skybox.glsl", "shaders/fragment_skybox.glsl", shader_success);
     if (!shader_success)  return -1;
     Shaders program_em_reflect("shaders/vertex.glsl", "shaders/fragment_em_reflect.glsl", shader_success);
+    if (!shader_success)  return -1;
+    Shaders program_em_refract("shaders/vertex.glsl", "shaders/fragment_em_refract.glsl", shader_success);
     if (!shader_success)  return -1;
 
     // Create camera
@@ -153,9 +155,12 @@ int main()
         case 2:
             cur_program = &program_em_reflect;
             break;
+        case 3:
+            cur_program = &program_em_refract;
+            break;
         default:
             std::cout << "Invalid render mode " << render_mode.value << std::endl;
-            break;
+            return -1;
         }
 
         // Render light source (emissive small box)

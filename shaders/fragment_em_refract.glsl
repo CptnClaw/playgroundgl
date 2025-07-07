@@ -10,7 +10,8 @@ out vec4 fragColor;
 
 void main()
 {
+    float ior = 1.0 / 1.52; // Approximately air to glass index of refraction ratio
     vec3 camera_direction = normalize(vertex_position - camera_position);
-    vec3 reflected_direction = reflect(camera_direction, vertex_normal);
-    fragColor = vec4(texture(cubemap, reflected_direction).rgb, 1.0);
+    vec3 refracted_direction = refract(camera_direction, vertex_normal, ior);
+    fragColor = vec4(texture(cubemap, refracted_direction).rgb, 1.0);
 }
